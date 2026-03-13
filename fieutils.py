@@ -73,9 +73,9 @@ fie_image_files = [
     "images/fie bye bye.png",
     "images/fie (and laura).png",
     "images/ValentineKuro.png",
-    "images/Fie CSI.png",
-    "images/Fie CSII.png",
-    "images/Fie CSIII.png",
+    "images/Fie CS I.png",
+    "images/Fie CS II.png",
+    "images/Fie CS III.png",
     "images/Fie Reverie.png",
     "images/Fie Daybreak.png",
 ]
