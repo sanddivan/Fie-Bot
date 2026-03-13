@@ -41,10 +41,14 @@ CHARACTER_LEVEL_IMAGES = {
 LEVEL_THRESHOLDS = [0, 1000, 2500, 5000, 10000, 15000, 20000]
 
 rank_points = {
-    "S": 3,
-    "A": 3,
+    "SHD": 10,
+    "S":8,
+    "AHD": 5,
+    "A":4,
+    "BHD":3,
     "B": 2,
-    "C": 1
+    "CHD":1,
+    "C": 0
 }
 
 WHITELISTED_USERS = {
@@ -59,32 +63,57 @@ WHITELISTED_USERS = {
     "812099925600501882", # Kastle
     "171448536792170496", # Ze_Mighty_Muffin
     "258976828021014530", # Hase
-    "428537511661404160", # Afonso
-    "414248526730756096" # Dreamxiety
+    "1462581072377282637", # Afonso
+    "827133137611391027", # Alex
+    "420689446405668876", # Leo5h
+    "668257990385860643", # Rkufas
+    "503608605434576926", # GoncS
+    "414248526730756096", # Dreamxiety
+    "600442894196670464",
+    "459352651386191872",
+    "290924026531020800",
+    "573937850895040542"
+
+
 }
 
 VALID_MAP_LINKS = {
-        "https://osu.ppy.sh/beatmapsets/1148570#fruits/2397952",
-        "https://osu.ppy.sh/beatmapsets/1794214#fruits/3677233",
-        "https://osu.ppy.sh/beatmapsets/1789437#fruits/3666577",
-        "https://osu.ppy.sh/beatmapsets/1493146#fruits/3060693",
-        "https://osu.ppy.sh/beatmapsets/1388177#fruits/2866964",
-        "https://osu.ppy.sh/beatmapsets/1688341#fruits/3450339",
-        "https://osu.ppy.sh/beatmapsets/1693907#fruits/3461274",
-        "https://osu.ppy.sh/beatmapsets/779608#fruits/1637120",
-        "https://osu.ppy.sh/beatmapsets/1723219#fruits/3521814",
-        "https://osu.ppy.sh/beatmapsets/1776740#fruits/3638586",
-        "https://osu.ppy.sh/beatmapsets/941899#fruits/1966809",
-        "https://osu.ppy.sh/beatmapsets/1753057#fruits/3587544",
-        "https://osu.ppy.sh/beatmapsets/1174853#fruits/2450533",
-        "https://osu.ppy.sh/beatmapsets/1460413#fruits/3000775",
-        "https://osu.ppy.sh/beatmapsets/1550926#fruits/3169318",
-        "https://osu.ppy.sh/beatmapsets/1234494#fruits/2566257",
-        "https://osu.ppy.sh/beatmapsets/1406206#fruits/2899706",
-        "https://osu.ppy.sh/beatmapsets/1746675#fruits/3572726",
-        "https://osu.ppy.sh/beatmapsets/1712961#fruits/3500160",
-        "https://osu.ppy.sh/beatmapsets/945848#fruits/1975026",
-        "https://osu.ppy.sh/beatmapsets/534978#fruits/1133219",
-        "https://osu.ppy.sh/beatmapsets/1037471#fruits/2169000",
-        "https://osu.ppy.sh/beatmapsets/1479835#fruits/3035752",
+        "https://osu.ppy.sh/beatmapsets/1897184#fruits/3910122",
+        "https://osu.ppy.sh/beatmapsets/1775849#fruits/3636396",
+        "https://osu.ppy.sh/beatmapsets/1526769#osu/3123433",
+        "https://osu.ppy.sh/beatmapsets/1973175#osu/4097066",
+        "https://osu.ppy.sh/beatmapsets/1018810#fruits/2131968",
+        "https://osu.ppy.sh/beatmapsets/38444#fruits/123297",
+        "https://osu.ppy.sh/beatmapsets/977787#osu/2106505",
+        "https://osu.ppy.sh/beatmapsets/680063#fruits/1444821",
+        "https://osu.ppy.sh/beatmapsets/2144786#fruits/4517001",
+        "https://osu.ppy.sh/beatmapsets/1313664#osu/2722655",
+        "https://osu.ppy.sh/beatmapsets/2164820#fruits/4566457",
+        "https://osu.ppy.sh/beatmapsets/1102510#osu/2702975",
+        "https://osu.ppy.sh/beatmapsets/1622010#fruits/3311584",
+        "https://osu.ppy.sh/beatmapsets/2432675#fruits/5307836",
+        "https://osu.ppy.sh/beatmapsets/2216274#osu/4708004",
+        "https://osu.ppy.sh/beatmapsets/1662690#osu/3394240",
+        "https://osu.ppy.sh/beatmapsets/2195073#fruits/4644348",
+        "https://osu.ppy.sh/beatmapsets/1347368#osu/2797780",
+        "https://osu.ppy.sh/beatmapsets/700726#fruits/1486940",
+        "https://osu.ppy.sh/beatmapsets/1972973#fruits/4206012",
+        "https://osu.ppy.sh/beatmapsets/2239161#fruits/4758383",
+        "https://osu.ppy.sh/beatmapsets/1662690#osu/3413654",
+        "https://osu.ppy.sh/beatmapsets/981773#fruits/2054796",
+        "https://osu.ppy.sh/beatmapsets/2195061#fruits/4644328",
+        "https://osu.ppy.sh/beatmapsets/757410#osu/1593361",
+        "https://osu.ppy.sh/beatmapsets/757146#osu/1596946",
+        "https://osu.ppy.sh/beatmapsets/1078698#fruits/2257065",
+        "https://osu.ppy.sh/beatmapsets/1235154#fruits/2570644",
+        "https://osu.ppy.sh/beatmapsets/1662690#osu/3934468",
+        "https://osu.ppy.sh/beatmapsets/20237#osu/70760",
+        "https://osu.ppy.sh/beatmapsets/542081#osu/1150597",
+        "https://osu.ppy.sh/beatmapsets/1782707#osu/3686870",
+        "https://osu.ppy.sh/beatmapsets/888887#osu/1899735",
+        "https://osu.ppy.sh/beatmapsets/2058976#fruits/4334523",
+        "https://osu.ppy.sh/beatmapsets/2216274#osu/4708004",
+        "https://osu.ppy.sh/beatmapsets/20533#fruits/74845",
+        "https://osu.ppy.sh/beatmapsets/2058976#osu/4303461",
+
     }
