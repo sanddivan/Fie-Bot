@@ -21,6 +21,7 @@ from typing import TypeAlias, Union
 
 import asyncio
 import fiecommands
+import fielearning
 import fiegames
 from fie_trails import fietrails
 import random
@@ -60,7 +61,9 @@ fiehelp = ("'fie rps' -> Play rock/paper/scissors with yours truly\n"
            " (feel free to ask for more)\n"
            "'fie how many days until date (dd-mm-yyyy)' -> Days left until a date"
            " you want to calculate\n"
-           "'fie hangman' -> Come guess random Trails words!")
+           "'fie hangman' -> Come guess random Trails words!\n"
+           "'fie speak' -> I'll say something I learned from you all\n"
+           "'fie learning stats' -> See how much I've learned so far")
 
 # List of Fie images! We seriously are obsessed.
 
@@ -90,29 +93,29 @@ fie_image_files = [
 daily_messages = [
     DailyMessage(
         False,
-        time(hour=23, tzinfo=UTC),
+        time(hour=22, tzinfo=UTC),
         ("<@98491257784909824> have you trained yet? "
          "Laura is expecting you <:Laura_S:1252956467779076106>")
     ),
 
     DailyMessage(
         False,
-        time(hour=19, tzinfo=UTC),
+        time(hour=18, tzinfo=UTC),
         ("<@444271831118249996> it's a bit embarassing to hear how much you "
          f"appreciate me but thanks! I appreciate you too Yuuyuu {emote("GRINV")}")
     ),
 
     DailyMessage(
         False,
-        time(hour=21, tzinfo=UTC),
-        ("<@145607631149465600> <:Laura_S:1252956467779076106>: "
+        time(hour=20, tzinfo=UTC),
+        ("<@1494787411618566262> <:Laura_SD:1497913480127320165>: "
          "HELLO NANA, HOPE YOU HAD A GOOD DAY! I STILL DON'T KNOW HOW TO "
          "USE MY PHONE VERY WELL. HOPE YOU TAKE CARE OF YOURSELF - LAURA")
     ),
 
     DailyMessage(
         False,
-        time(hour=1, tzinfo=UTC),
+        time(hour=0, tzinfo=UTC),
         ("<@164047938325184512> <:Fie_Claussell:1304860526936985620> "
          "You. Bed. Now. ")
     ),
@@ -178,6 +181,9 @@ async def handle_message(client_obj: Client, message_obj: Message) -> None:
     if message_obj.author.bot:
         return
 
+    # Passive learning
+    fielearning.learn(message_obj.content)
+
     # AUTO XP GAIN
     user_id = str(message_obj.author.id)
     xp_result = fiecommands.add_xp(user_id, 10)  # Add 10 XP per message
@@ -225,13 +231,11 @@ async def handle_message(client_obj: Client, message_obj: Message) -> None:
         fun_fact = fiecommands.fie_what_is(message)
         await send_text(message_obj, fun_fact, is_private)
 
-    elif "fie scores" in message:
-        scores = fiecommands.fie_scores(message)
-        await send_text(message_obj, scores, is_private)
 
     elif "fie leaderboard" in message:
         osu_lb = fiecommands.fie_leaderboard()
         await send_text(message_obj, osu_lb, is_private)
+
 
     elif "fie level" in message:
 
@@ -281,6 +285,14 @@ async def handle_message(client_obj: Client, message_obj: Message) -> None:
         matches = fiecommands.fie_football(team_name)
 
         await send_text(message_obj, matches, is_private)
+
+    elif "fie speak" in message:
+        phrase = fielearning.generate_phrase()
+        await send_text(message_obj, phrase, is_private)
+
+    elif "fie learning stats" in message:
+        stats = fielearning.chain_stats()
+        await send_text(message_obj, stats, is_private)
 
 
     # ################################################## #
@@ -388,6 +400,8 @@ async def send_message(
 # Any other utility functions that are not specific to a command or game go here. #
 # ******************************************************************************* #
 
+
+
 # NOTE: This should go elsewhere, but I'm done dealing with that stupid circular
 #       import error :skull:
 def fie_response(user_input: str) -> str:
@@ -399,6 +413,16 @@ def fie_response(user_input: str) -> str:
 
     elif user_input == "fie help":
         return help_msg()
+
+    elif user_input == "fie fnm":
+        return "https://cdn.discordapp.com/attachments/874592828506898445/1496973747255771187/image.png?ex=6a0195b1&is=6a004431&hm=70d40859fcab7461f9d6dab92e12404113ff9eee95fcdcfa10aac147907eb0f3&"
+
+    elif user_input == "fie cwc":
+        return ("Available times:\n"
+                "Demi: Whole Saturday, Sunday: Maybe after 18UTC at most\n"
+                "Rosa: Only Sunday\n"
+                "Afonso: Prefers Sunday evening\n"
+                "ExPin: Seems to prefer Sunday evening\n")
 
     elif any(msg in user_input for msg in ["hi fie", "hey fie", "hello fie"]):
         return f"Hey what's up {emote("WAVE")}"
@@ -434,14 +458,8 @@ def fie_response(user_input: str) -> str:
     # IDEA: Would be cool to somehow use some sports news outlet's API to get
     #       actual results of games here.
 
-    if "fie gsw" in user_input:
-        return "The Warriors are 0-0!"
-
     elif "warriors" in user_input:
         return "WARRIORS!"
-
-    elif "fie bulls" in user_input:
-        return "The Bulls are 29-39, but they will show off at the play-in ;)"
 
     # Fie ain't taking blame on being mean ever >:)
     elif "fie you're a meanie" in user_input:
@@ -476,6 +494,7 @@ def fie_response(user_input: str) -> str:
     elif "fox" in user_input:
         return "Cool guy! But needs to play trails!"
 
+
     #elif "fie" in user_input:
         #return sylphid_reaction()
 
@@ -485,7 +504,7 @@ def fie_response(user_input: str) -> str:
 async def send_daily_message(client: Client, is_private: bool):
     await client.wait_until_ready()
 
-    channel1 = client.get_channel(420709830622183434)
+    channel1 = client.get_channel(1494825652011012220)
     channel2 = client.get_channel(1300997938335580171)
     channel3 = client.get_channel(1299453968363032760)
 
@@ -532,5 +551,3 @@ def is_repeated_msg(msg_history: deque) -> bool:
     # first, and the author second. So, to define whether a message is repeated,
     # we have to check for same content but different author.
     return msg1[0] == msg2[0] and msg1[1] != msg2[1]
-
-

@@ -2,7 +2,7 @@
 import random
 from datetime import datetime, timedelta, UTC
 from fieemotes import emote
-from fieconstants import CHARACTER_LEVEL_IMAGES, LEVEL_THRESHOLDS, rank_points, WHITELISTED_USERS, VALID_MAP_LINKS
+from fieconstants import CHARACTER_LEVEL_IMAGES, LEVEL_THRESHOLDS, rank_points, WHITELISTED_USERS
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -200,37 +200,6 @@ def fie_what_is(question_msg: str) -> str:
 
     return fun_fact
 
-
-def fie_scores(message: str) -> str:
-
-
-    tokens = message.split()
-
-    if len(tokens) < 5:
-        return "Hey dummy, use it like this: fie scores [player] [map_link] [rank]"
-
-    player = tokens[2].lower()
-    map_link = tokens[3]
-    rank = tokens[4].upper()
-
-    if map_link not in VALID_MAP_LINKS:
-        return f"That map isn’t part of the challenge! Caught you cheating huh?"
-
-    if rank not in rank_points:
-        return f"I don't know what {rank} is meant to be but it isn't a valid rank (use S, A, B or C)"
-
-    if player not in player_scores:
-        player_scores[player] = {}
-
-    previous_rank = player_scores[player].get(map_link)
-    player_scores[player][map_link] = rank
-
-    save_scores(player_scores)
-
-    if previous_rank:
-        return f"{player} updated score on {map_link} from {previous_rank} to {rank}"
-    else:
-        return f"{player} submitted {rank} for {map_link}"
 
 def fie_leaderboard() -> str:
     leaderboard = {}

@@ -1,6 +1,5 @@
 from fie_trails.craft import Craft
 
 class SCraft(Craft):
-    def __init__(self, **kwargs):
-        Craft.__init__(self, **kwargs)
-        self.cost = 200
+    def __init__(self, name,damage,cost):
+        super().__init__(name,damage,cost)

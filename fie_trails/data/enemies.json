@@ -1,0 +1,61 @@
+{
+    "bosses": [
+        {
+            "id": "gargoyle",
+            "name": "Iglute Garmr",
+            "unlocked_by_default": true,
+            "unlocks_next": "dino",
+            "max_hp": 200,
+            "max_cp": 200,
+            "str": 25,
+            "def": 20,
+            "ats": 25,
+            "adf": 20,
+            "spd": 15,
+            "xp_reward": 250,
+            "mira_reward": 100,
+            "crafts": [
+                { "name": "Claw Attack", "damage_multiplier": 2, "cost": 20 },
+                { "name": "Tail Swing", "damage_multiplier": 3, "cost": 40 }
+            ]
+        },
+        {
+            "id": "dino",
+            "name": "Scary Dinosaur",
+            "unlocked_by_default": false,
+            "unlocks_next": "grunoja",
+            "max_hp": 400,
+            "max_cp": 200,
+            "str": 30,
+            "def": 30,
+            "ats": 20,
+            "adf": 20,
+            "spd": 20,
+            "xp_reward": 500,
+            "mira_reward": 1000,
+            "crafts": [
+                { "name": "Bite", "damage_multiplier": 2, "cost": 20 },
+                { "name": "Decimate", "damage_multiplier": 3, "cost": 40 }
+            ]
+        },
+        {
+            "id": "grunoja",
+            "name": "Grunoja",
+            "unlocked_by_default": false,
+            "unlocks_next": "unknown",
+            "max_hp": 800,
+            "max_cp": 200,
+            "str": 60,
+            "def": 40,
+            "ats": 20,
+            "adf": 25,
+            "spd": 25,
+            "xp_reward": 1000,
+            "mira_reward": 2000,
+            "crafts": [
+                { "name": "Deadly Cry", "damage_multiplier": 2, "cost": 20 },
+                { "name": "Fists of Fury", "damage_multiplier": 3, "cost": 40 }
+            ]
+        }
+    ]
+}

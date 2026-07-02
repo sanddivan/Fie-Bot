@@ -1,5 +1,6 @@
 from fie_trails.craft import Craft
 from fie_trails.art import Art
+from fie_trails.element import Element
 from fie_trails.orbment import Orbment
 from dataclasses import dataclass, field
 from fie_trails.scraft import SCraft
@@ -48,7 +49,7 @@ class Character:
 
         # Note: This is merely an example for Rean
         def initialize_rean(self):
-            if self.level >= 5:
+            if self.level >= 2:
                 self.crafts.append(Craft("Motivate", 0, 10))
             if self.level >= 15:
                 self.crafts.append(Craft("Arc Slash", self.str * 2, 30))
@@ -56,8 +57,8 @@ class Character:
                 self.crafts.append(Craft("Gale", self.str * 3, 35))
             if self.level >= 55:
                 self.crafts.append(Craft("Flame Impact", self.str * 4, 35))
-            if self.level >= 10:
-                self.s_crafts.append(SCraft("S-Craft  Flame Slash", self.str * 10))
+            if self.level >= 5:
+                self.s_crafts.append(SCraft("S-Craft Flame Slash", self.str * 10, 200))
 
             for orbment in self.equipped_orbments:
                 if orbment.art_produced is not None:
@@ -74,13 +75,13 @@ class Character:
 
             # Initialize crafts/orbments/arts
             self.crafts = [Craft("Autumn Leaf Cutter", self.str * 2, 20)]
-            fire_art = Art("Fire Bolt", self.str * 2, 20, "fire")
+            fire_art = Art("Fire Bolt", self.str * 2, 20, Element.FIRE)
 
             self.available_orbments = [
-                Orbment("Attack 1", 0, "fire", fire_art)
+                Orbment("Attack 1", 0, Element.FIRE, fire_art)
             ]
             self.equipped_orbments = [
-                Orbment("Attack 2", 0, "fire", fire_art)
+                Orbment("Attack 2", 0, Element.FIRE, fire_art)
             ]
 
             # Pull arts from equipped orbments

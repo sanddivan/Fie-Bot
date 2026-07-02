@@ -3,10 +3,12 @@
 # Change this import to "from enum import Enum"
 from enum import Enum
 
+from fie_trails.element import Element
+
 
 class Art:
     # And then change "element: enum" to "element: Enum".
-    def __init__(self, name: str, damage: int, cost: int, element: Enum):
+    def __init__(self, name: str, damage: int, cost: int, element: Element):
         self.name = name
         self.damage = damage
         self.cost = cost
