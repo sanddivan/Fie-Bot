@@ -1,8 +1,9 @@
 import asyncio
 from discord import Client, Message
 from fie_trails.character import Character
-from fie_trails.art import Art
 from fieemotes import emote
+
+SLOTS = 6
 
 
 async def wait_for_digit_reply(client, author, channel, timeout=120.0):
@@ -13,81 +14,99 @@ async def wait_for_digit_reply(client, author, channel, timeout=120.0):
             m.channel == channel and
             m.content.isdigit()
         )
-
     try:
         return await client.wait_for("message", check=check, timeout=timeout)
     except asyncio.TimeoutError:
         return None
 
-async def change_orbments(client_obj: Client, message_obj: Message, character: Character) -> None:
+
+async def change_orbments(
+    client_obj: Client, message_obj: Message, character: Character
+) -> None:
     src_channel = message_obj.channel
-    orbment_list = ""
 
-    # CHARACTER'S EQUIPPED ORBMENTS
-    for i in range(0, len(character.equipped_orbments)):
-        orbment_list += (f"{i + 1} - " + str(character.equipped_orbments[i]) + "\n")
+    # Show equipped slots (None slots shown as empty)
+    slot_lines = []
+    for i, slot in enumerate(character.equipped_orbments):
+        label = str(slot) if slot is not None else "(empty)"
+        slot_lines.append(f"{i + 1} - {label}")
+    slot_lines.append("0 - Exit")
 
-    if orbment_list == "":
-        await src_channel.send("No current equipped orbments found.\n")
-    else:
-        await src_channel.send("Equipped orbments:\n" + orbment_list)
+    await src_channel.send("Equipped orbments:\n" + "\n".join(slot_lines))
 
-    await src_channel.send("0 - Exit")
-
-    orbment_choice = await wait_for_digit_reply(
+    slot_choice = await wait_for_digit_reply(
         client_obj, message_obj.author, message_obj.channel
     )
 
-    if orbment_choice is None:
+    if slot_choice is None:
         await src_channel.send(
             f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
         )
         return
 
-    orbment_chosen = int(orbment_choice.content)
-    if orbment_chosen == 0:
+    slot_chosen = int(slot_choice.content)
+    if slot_chosen == 0:
         return
-    elif orbment_chosen > 6:
+    if slot_chosen > SLOTS:
         await src_channel.send("That's not an available slot!")
         return
+
+    # Show available orbments
+    if not character.available_orbments:
+        await src_channel.send("You don't have any orbments to equip yet!")
+        return
+
+    available_lines = []
+    for i, orb in enumerate(character.available_orbments):
+        available_lines.append(f"{i + 1} - {orb}")
+    available_lines.append("0 - Unequip slot")
+
+    await src_channel.send("Available orbments:\n" + "\n".join(available_lines))
+
+    replacement_choice = await wait_for_digit_reply(
+        client_obj, message_obj.author, message_obj.channel
+    )
+
+    if replacement_choice is None:
+        await src_channel.send(
+            f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
+        )
+        return
+
+    available_chosen = int(replacement_choice.content)
+
+    if available_chosen == 0:
+        # Unequip: move equipped orbment back to available if there was one
+        current = character.equipped_orbments[slot_chosen - 1]
+        if current is not None:
+            character.available_orbments.append(current)
+        character.equipped_orbments[slot_chosen - 1] = None
+        await src_channel.send(f"Slot {slot_chosen} unequipped.")
     else:
-        available_orbment_list = " "
-
-        # CHARACTER'S AVAILABLE ORBMENTS
-        for i in range(0, len(character.available_orbments)):
-            available_orbment_list += (f"{i + 1} - " + str(character.available_orbments[i]) + "\n")
-
-        if available_orbment_list == " ":
-            await src_channel.send("No current available orbments found.\n")
-        else:
-            await src_channel.send("Available orbments:\n" + available_orbment_list)
-        await src_channel.send("0 - Exit")
-
-        replacement_choice = await wait_for_digit_reply(client_obj, message_obj.author, message_obj.channel)
-        if orbment_choice is None:
-            await src_channel.send(
-                f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
-            )
+        if available_chosen > len(character.available_orbments):
+            await src_channel.send("That's not a valid orbment!")
             return
 
-        available_chosen = int(replacement_choice.content)
-        if available_chosen == 0:
-            return
+        incoming = character.available_orbments[available_chosen - 1]
+        outgoing = character.equipped_orbments[slot_chosen - 1]
 
-        else:
-            # We will set a new orbment here
-            await src_channel.send(f"Replaced orbment: {character.equipped_orbments[orbment_chosen - 1]} for "
-                                   f"{character.available_orbments[available_chosen - 1]}" )
+        # Swap: put the previously equipped orbment back into available
+        character.available_orbments[available_chosen - 1] = outgoing if outgoing is not None else incoming
+        if outgoing is None:
+            character.available_orbments.pop(available_chosen - 1)
+        character.equipped_orbments[slot_chosen - 1] = incoming
 
-            trader = character.available_orbments[available_chosen - 1]
-            character.available_orbments[available_chosen - 1] = character.equipped_orbments[orbment_chosen - 1]
-            character.equipped_orbments[orbment_chosen - 1] = trader
+        await src_channel.send(
+            f"Equipped {incoming} in slot {slot_chosen}."
+            + (f" {outgoing} moved to inventory." if outgoing else "")
+        )
 
-        
-async def change_equipment(client_obj: Client, message_obj: Message, character: Character) -> None:
-    src_channel = message_obj.channel
+    # Immediately refresh arts so the new orbment takes effect
+    character.refresh_equipped_arts()
+
+
+async def change_equipment(
+    client_obj: Client, message_obj: Message, character: Character
+) -> None:
     # WIP
-
-
-
-
+    pass

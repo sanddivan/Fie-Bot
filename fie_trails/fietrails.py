@@ -1,8 +1,6 @@
-# File: fietrails.py
-
 from discord import Client, Message
 from fie_trails.customization import change_orbments
-from fie_trails import user_manager, enemy_manager
+from fie_trails import user_manager, enemy_manager, orbment_manager
 from fie_trails.combat import fight
 from fieemotes import emote
 import asyncio
@@ -27,7 +25,6 @@ async def fie_trails(client_obj: Client, message_obj: Message):
     src_channel = message_obj.channel
     user_id = message_obj.author.id
 
-    # Load or create the user's save
     character, unlocked_bosses = user_manager.load(user_id)
 
     while True:
@@ -65,13 +62,21 @@ async def fie_trails(client_obj: Client, message_obj: Message):
                 enemy, boss_data = result
                 await fight(client_obj, message_obj, character, enemy)
 
-                # Unlock next boss if the player won (character survived)
                 if character.current_hp > 0:
+                    # Unlock next boss
                     unlocked_bosses = user_manager.unlock_next_boss(
                         unlocked_bosses, boss_data
                     )
 
-                # Persist progress after every fight
+                    # Roll and award orbment drops
+                    dropped_ids = orbment_manager.roll_drops(boss_data)
+                    new_orbments = user_manager.add_orbment_drops(
+                        user_id, character, unlocked_bosses, dropped_ids
+                    )
+                    if new_orbments:
+                        names = ", ".join(new_orbments)
+                        await src_channel.send(f"Orbment obtained: {names}!")
+
                 user_manager.save(user_id, character, unlocked_bosses)
 
             case 2:
@@ -89,4 +94,6 @@ async def fie_trails(client_obj: Client, message_obj: Message):
                 return
 
             case _:
-                await src_channel.send("Are you serious? All you have to do is choose between 0 and 4...\n")
+                await src_channel.send(
+                    "Are you serious? All you have to do is choose between 0 and 4...\n"
+                )

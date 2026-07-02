@@ -5,7 +5,7 @@ from fie_trails.enemy import Enemy
 from fie_trails.craft import Craft
 import asyncio
 
-ENEMIES_PATH = os.path.join(os.path.dirname(__file__), "data", "enemies.json")
+ENEMIES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "enemies.json")
 
 
 def _load_all() -> list[dict]:

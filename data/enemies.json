@@ -17,6 +17,9 @@
             "crafts": [
                 { "name": "Claw Attack", "damage_multiplier": 2, "cost": 20 },
                 { "name": "Tail Swing", "damage_multiplier": 3, "cost": 40 }
+            ],
+            "orbment_drops": [
+                { "id": "attack_1", "chance": 1.0 }
             ]
         },
         {
@@ -36,6 +39,9 @@
             "crafts": [
                 { "name": "Bite", "damage_multiplier": 2, "cost": 20 },
                 { "name": "Decimate", "damage_multiplier": 3, "cost": 40 }
+            ],
+            "orbment_drops": [
+                { "id": "attack_2", "chance": 1.0 }
             ]
         },
         {
@@ -55,6 +61,9 @@
             "crafts": [
                 { "name": "Deadly Cry", "damage_multiplier": 2, "cost": 20 },
                 { "name": "Fists of Fury", "damage_multiplier": 3, "cost": 40 }
+            ],
+            "orbment_drops": [
+                { "id": "defense_1", "chance": 0.75 }
             ]
         }
     ]
