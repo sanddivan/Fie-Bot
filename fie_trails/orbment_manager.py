@@ -22,11 +22,15 @@ def build_orbment(orbment_data: dict) -> Orbment:
     if orbment_data.get("art"):
         a = orbment_data["art"]
         art = Art(a["name"], a["damage"], a["cost"], Element[a["element"]])
+
+    element = Element[orbment_data["art"]["element"]] if orbment_data.get("art") else None
+
     return Orbment(
-        orbment_data["name"],
-        orbment_data["status_change"],
-        Element[orbment_data["art"]["element"]] if orbment_data.get("art") else None,
-        art,
+        name=orbment_data["name"],
+        status_change=orbment_data.get("status_change", 0),
+        stat=orbment_data.get("stat"),
+        element=element,
+        art_produced=art,
     )
 
 

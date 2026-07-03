@@ -13,7 +13,7 @@
             "adf": 20,
             "spd": 15,
             "xp_reward": 250,
-            "mira_reward": 100,
+            "mira_reward": 200,
             "crafts": [
                 { "name": "Claw Attack", "damage_multiplier": 2, "cost": 20 },
                 { "name": "Tail Swing", "damage_multiplier": 3, "cost": 40 }

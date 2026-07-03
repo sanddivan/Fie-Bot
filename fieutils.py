@@ -95,7 +95,7 @@ daily_messages = [
         False,
         time(hour=22, tzinfo=UTC),
         ("<@98491257784909824> have you trained yet? "
-         "Laura is expecting you <:Laura_S:1252956467779076106>")
+         "Laura is expecting you <:Laura_SD:1497913480127320165>")
     ),
 
     DailyMessage(

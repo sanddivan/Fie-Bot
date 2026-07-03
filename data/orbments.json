@@ -1,70 +1,76 @@
 {
-  "orbments": [
-    {
-      "id": "attack_1",
-      "name": "Attack 1",
-      "status_change": 10,
-      "art": {
-        "name": "Fire Bolt",
-        "damage": 40,
-        "cost": 20,
-        "element": "FIRE"
-      }
-    },
-    {
-      "id": "attack_2",
-      "name": "Attack 2",
-      "status_change": 20,
-      "art": {
-        "name": "Heatwave",
-        "damage": 80,
-        "cost": 50,
-        "element": "FIRE"
-      }
-    },
-    {
-      "id": "attack_3",
-      "name": "Attack 3",
-      "status_change": 30,
-      "art": {
-        "name": "Volcanic Rain",
-        "damage": 150,
-        "cost": 180,
-        "element": "FIRE"
-      }
-    },
-    {
-      "id": "defense_1",
-      "name": "Defense 1",
-      "status_change": 10,
-      "art": {
-        "name": "Needle Shot",
-        "damage": 40,
-        "cost": 20,
-        "element": "EARTH"
-      }
-    },
-    {
-      "id": "defense_2",
-      "name": "Defense 2",
-      "status_change": 20,
-      "art": {
-        "name": "Earth Lance",
-        "damage": 80,
-        "cost": 50,
-        "element": "EARTH"
-      }
-    },
-    {
-      "id": "defense_3",
-      "name": "Defense 3",
-      "status_change": 30,
-      "art": {
-        "name": "Grand Press",
-        "damage": 120,
-        "cost": 100,
-        "element": "EARTH"
-      }
-    }
-  ]
+    "orbments": [
+        {
+            "id": "attack_1",
+            "name": "Attack 1",
+            "status_change": 10,
+            "stat": "str",
+            "art": {
+                "name": "Fire Bolt",
+                "damage": 40,
+                "cost": 20,
+                "element": "FIRE"
+            }
+        },
+        {
+            "id": "attack_2",
+            "name": "Attack 2",
+            "status_change": 20,
+            "stat": "str",
+            "art": {
+                "name": "Heatwave",
+                "damage": 80,
+                "cost": 50,
+                "element": "FIRE"
+            }
+        },
+        {
+            "id": "attack_3",
+            "name": "Attack 3",
+            "status_change": 30,
+            "stat": "str",
+            "art": {
+                "name": "Volcanic Rain",
+                "damage": 150,
+                "cost": 180,
+                "element": "FIRE"
+            }
+        },
+        {
+            "id": "defense_1",
+            "name": "Defense 1",
+            "status_change": 10,
+            "stat": "dfs",
+            "art": {
+                "name": "Needle Shot",
+                "damage": 40,
+                "cost": 20,
+                "element": "EARTH"
+            }
+        },
+        {
+            "id": "defense_2",
+            "name": "Defense 2",
+            "status_change": 20,
+            "stat": "dfs",
+            "art": {
+                "name": "Earth Lance",
+                "damage": 80,
+                "cost": 50,
+                "element": "EARTH"
+            }
+        },
+        {
+            "id": "defense_3",
+            "name": "Defense 3",
+            "status_change": 30,
+            "stat": "dfs",
+            "art": {
+                "name": "Grand Press",
+                "damage": 120,
+                "cost": 100,
+                "element": "EARTH"
+            }
+        }
+    ]
 }

@@ -53,13 +53,11 @@ class Character:
         self.current_ep = self.base_ep
         self.cp = self.base_cp
 
-        # Orbments and arts are populated by user_manager after load,
-        # not hardcoded here anymore.
+        # Orbments and arts are populated by user_manager after load
         self.available_orbments = []
         self.equipped_orbments = [None] * 6
         self.equipped_arts = []
 
-        # Base craft available from the start
         self.crafts = [Craft("Autumn Leaf Cutter", self.str * 2, 20)]
 
     def initialize_rean(self):
@@ -67,24 +65,41 @@ class Character:
         self.crafts = [Craft("Autumn Leaf Cutter", self.str * 2, 20)]
         self.s_crafts = []
 
-        if self.level >= 2:
-            self.crafts.append(Craft("Motivate", 0, 10))
-        if self.level >= 10:
-            self.crafts.append(Craft("Arc Slash", self.str * 2, 30))
-        if self.level >= 15:
-            self.crafts.append(Craft("Gale", self.str * 3, 35))
-        if self.level >= 25:
-            self.crafts.append(Craft("Flame Impact", self.str * 4, 35))
         if self.level >= 5:
+            self.crafts.append(Craft("Motivate", 0, 10))
+        if self.level >= 15:
+            self.crafts.append(Craft("Arc Slash", self.str * 2, 30))
+        if self.level >= 35:
+            self.crafts.append(Craft("Gale", self.str * 3, 35))
+        if self.level >= 55:
+            self.crafts.append(Craft("Flame Impact", self.str * 4, 35))
+        if self.level >= 10:
             self.s_crafts.append(SCraft("S-Craft - Flame Slash", self.str * 10, 200))
 
     def refresh_equipped_arts(self):
-        """Rebuild equipped arts from currently equipped orbments."""
+        """
+        Rebuild equipped arts from currently equipped orbments,
+        then apply orbment stat bonuses.
+        """
         self.equipped_arts = [
             slot.art_produced
             for slot in self.equipped_orbments
             if slot is not None and slot.art_produced is not None
         ]
+        self.apply_orbment_bonuses()
+
+    def apply_orbment_bonuses(self):
+        """
+        Reset stats to their base scaled values, then add bonuses
+        from all currently equipped orbments.
+        """
+        self.refresh_stats()
+        for slot in self.equipped_orbments:
+            if slot is None or not slot.stat or not slot.status_change:
+                continue
+            current = getattr(self, slot.stat, None)
+            if current is not None:
+                setattr(self, slot.stat, current + slot.status_change)
 
     def set_xp(self, xp: int):
         self.current_xp = xp
@@ -92,6 +107,7 @@ class Character:
         self.level = self.calculate_level()
         if self.level != old_level:
             self.refresh_stats()
+            self.apply_orbment_bonuses()
             self.initialize_rean()
 
     def __str__(self):

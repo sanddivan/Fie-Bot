@@ -25,17 +25,17 @@ def build_enemy(boss_data: dict) -> Enemy:
     ]
     return Enemy(
         boss_data["name"],
-        boss_data["max_hp"],
-        boss_data["max_hp"],   # current_HP starts at max
-        boss_data["str"],
-        boss_data["def"],
-        boss_data["ats"],
-        boss_data["adf"],
-        boss_data["spd"],
-        1,                     # level placeholder
-        boss_data["xp_reward"],
-        1,                     # mira placeholder
-        boss_data.get("mira_reward", 0),
+        boss_data["max_hp"],  # max_HP
+        boss_data["max_hp"],  # current_HP
+        boss_data["max_cp"],  # EP
+        boss_data["max_cp"],  # CP
+        boss_data["str"],  # STR
+        boss_data["def"],  # DEF
+        boss_data["spd"],  # SPD
+        boss_data["ats"],  # ATS
+        boss_data["adf"],  # ADF
+        1,  # level
+        boss_data["xp_reward"],  # xp
         crafts,
     )
 
