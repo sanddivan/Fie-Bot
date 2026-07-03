@@ -66,7 +66,7 @@ async def fight(
                 await src_channel.send(
                     f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
                 )
-                return None
+                return None, "physical"
 
             craft_chosen = int(craft_choice.content)
             num_crafts = len(character.crafts)
@@ -96,7 +96,7 @@ async def fight(
                 await src_channel.send("Haaaaaaaa... zan!\n")
                 await asyncio.sleep(2)
 
-            return selected.damage
+            return selected.damage, "physical"
 
     async def choose_art(character: Character):
         while True:
@@ -117,19 +117,20 @@ async def fight(
                 await src_channel.send(
                     f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
                 )
-                return None
+                return None, "art"
 
             art_chosen = int(art_choice.content)
             selected_art = character.equipped_arts[art_chosen - 1]
 
             if selected_art.cost > character.current_ep:
                 await src_channel.send(
-                    f"Not enough EP! You have {character.current_ep}/{character.ep}. Pick another art."
+                    f"Not enough EP! You have {character.current_ep}/{character.ep}. "
+                    f"Pick another art."
                 )
                 continue
 
             character.current_ep -= selected_art.cost
-            return selected_art.damage
+            return selected_art.damage + character.ats, "art"
 
     async def character_turn(character: Character):
         await src_channel.send(
@@ -149,23 +150,23 @@ async def fight(
             await src_channel.send(
                 f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
             )
-            return None
+            return None, "physical"
 
         option = int(combat_choice.content)
         match option:
             case 1:
-                return character.str
+                return character.str, "physical"
             case 2:
                 return await choose_craft(character)
             case 3:
                 return await choose_art(character)
             case 4:
-                return 0
+                return 0, "physical"
             case _:
                 await src_channel.send(
                     "Are you serious? All you have to do is choose between 1 and 4..."
                 )
-                return 0
+                return 0, "physical"
 
     async def enemy_turn(enemy: Enemy):
         choice = random.randint(0, len(enemy.crafts))
@@ -181,7 +182,7 @@ async def fight(
         if choice == 0:
             return enemy.STR
         else:
-            enemy.setCP(enemy.getCP() - enemy.crafts[choice - 1].cost)
+            enemy.set_cp(enemy.get_cp() - enemy.crafts[choice - 1].cost)
             return enemy.crafts[choice - 1].damage
 
     def reset_everyone(enemy: Enemy, character: Character):
@@ -189,10 +190,10 @@ async def fight(
         enemy.reset()
 
     async def check_victory(enemy: Enemy, character: Character):
-        if enemy.get_current_HP() <= 0:
+        if enemy.get_current_hp() <= 0:
             await src_channel.send("You won!\n")
-            character.set_xp(character.current_xp + enemy.getXP())
-            await src_channel.send(f"XP gained: {enemy.getXP()}")
+            character.set_xp(character.current_xp + enemy.get_xp())
+            await src_channel.send(f"XP gained: {enemy.get_xp()}")
             reset_everyone(enemy, character)
             return True
         return False
@@ -211,12 +212,15 @@ async def fight(
         while character.current_hp > 0 and enemy.current_HP > 0:
             if character.spd >= enemy.SPD:
                 # Character attacks
-                damage_dealt = await character_turn(character)
-                difference = dif(damage_dealt - enemy.getDEF())
-                enemy.set_current_HP(enemy.get_current_HP() - difference)
+                damage_dealt, damage_type = await character_turn(character)
+                if damage_type == "art":
+                    difference = dif(damage_dealt - enemy.get_adf())
+                else:
+                    difference = dif(damage_dealt - enemy.get_def())
+                enemy.set_current_hp(enemy.get_current_hp() - difference)
                 gain_cp(CP_ON_HIT)
                 await src_channel.send(
-                    f"Enemy HP: {enemy.get_current_HP()} (-{difference})\n"
+                    f"Enemy HP: {enemy.get_current_hp()} (-{difference})\n"
                 )
                 await asyncio.sleep(1)
 
@@ -251,12 +255,15 @@ async def fight(
                     return
 
                 # Character attacks
-                damage_dealt = await character_turn(character)
-                difference = dif(damage_dealt - enemy.getDEF())
-                enemy.set_current_HP(enemy.get_current_HP() - difference)
+                damage_dealt, damage_type = await character_turn(character)
+                if damage_type == "art":
+                    difference = dif(damage_dealt - enemy.get_adf())
+                else:
+                    difference = dif(damage_dealt - enemy.get_def())
+                enemy.set_current_hp(enemy.get_current_hp() - difference)
                 gain_cp(CP_ON_HIT)
                 await src_channel.send(
-                    f"Enemy HP: {enemy.get_current_HP()} (-{difference})\n"
+                    f"Enemy HP: {enemy.get_current_hp()} (-{difference})\n"
                 )
                 await asyncio.sleep(1)
 

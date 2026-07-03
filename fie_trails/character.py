@@ -13,7 +13,7 @@ class Character:
 
     # Base stats
     base_max_hp: int = 500
-    base_ep: int = 100
+    base_ep: int = 200
     base_cp: int = 0
     base_str: int = 20
     base_def: int = 15

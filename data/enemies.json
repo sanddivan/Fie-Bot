@@ -12,7 +12,7 @@
             "ats": 25,
             "adf": 20,
             "spd": 15,
-            "xp_reward": 250,
+            "xp_reward": 500,
             "mira_reward": 200,
             "crafts": [
                 { "name": "Claw Attack", "damage_multiplier": 2, "cost": 20 },
@@ -34,7 +34,7 @@
             "ats": 20,
             "adf": 20,
             "spd": 20,
-            "xp_reward": 500,
+            "xp_reward": 1000,
             "mira_reward": 1000,
             "crafts": [
                 { "name": "Bite", "damage_multiplier": 2, "cost": 20 },
@@ -56,14 +56,14 @@
             "ats": 20,
             "adf": 25,
             "spd": 25,
-            "xp_reward": 1000,
+            "xp_reward": 2000,
             "mira_reward": 2000,
             "crafts": [
                 { "name": "Deadly Cry", "damage_multiplier": 2, "cost": 20 },
                 { "name": "Fists of Fury", "damage_multiplier": 3, "cost": 40 }
             ],
             "orbment_drops": [
-                { "id": "defense_1", "chance": 0.75 }
+                { "id": "defense_1", "chance": 1.00 }
             ]
         }
     ]

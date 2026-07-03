@@ -18,49 +18,62 @@ class Enemy:
         self.level = level
         self.xp = xp
         self.crafts = crafts
-        self._initial_state = self.__dict__.copy()
+        self._initial_state = {
+            k: v for k, v in self.__dict__.items() if k != "_initial_state"
+        }
 
-    # Same as in the Character class. Please please please use dataclasses instead.
-
-    def get_name(self):
+    def get_name(self) -> str:
         return self.name
 
-    def get_max_HP(self):
+    def get_max_hp(self) -> int:
         return self.max_HP
 
-    def get_current_HP(self):
+    def get_current_hp(self) -> int:
         return self.current_HP
 
-    def set_max_HP(self, max_HP: int):
+    def set_max_hp(self, max_HP: int):
         self.max_HP = max_HP
 
-    def set_current_HP(self, current_HP: int):
+    def set_current_hp(self, current_HP: int):
         self.current_HP = current_HP
 
-    def getEP(self):
+    def get_ep(self) -> int:
         return self.EP
 
-    def setEP(self, EP: int):
+    def set_ep(self, EP: int):
         self.EP = EP
 
-    def getCP(self):
+    def get_cp(self) -> int:
         return self.CP
 
-    def setCP(self, CP: int):
+    def set_cp(self, CP: int):
         self.CP = CP
 
-    def getSTR(self):
+    def get_str(self) -> int:
         return self.STR
 
-    def setSTR(self, STR: int):
+    def set_str(self, STR: int):
         self.STR = STR
 
-    def getDEF(self):
+    def get_def(self) -> int:
         return self.DEF
 
-    def setDEF(self, DEF: int):
+    def set_def(self, DEF: int):
         self.DEF = DEF
-    def getXP(self):
+
+    def get_ats(self) -> int:
+        return self.ATS
+
+    def set_ats(self, ATS: int):
+        self.ATS = ATS
+
+    def get_adf(self) -> int:
+        return self.ADF
+
+    def set_adf(self, ADF: int):
+        self.ADF = ADF
+
+    def get_xp(self) -> int:
         return self.xp
 
     def get_specific_craft(self, index: int):
@@ -72,6 +85,6 @@ class Enemy:
     def __str__(self):
         return str(self.crafts)
 
-    # IMPORTANT: This only works once. A new way has to be found for this
     def reset(self):
-        self.set_current_HP(self.max_HP)
+        for k, v in self._initial_state.items():
+            setattr(self, k, v)
