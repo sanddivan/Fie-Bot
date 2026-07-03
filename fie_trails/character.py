@@ -50,7 +50,7 @@ class Character:
         self.level = self.calculate_level()
         self.refresh_stats()
         self.current_hp = self.max_hp
-        self.current_ep = self.base_ep
+        self.current_ep = self.ep
         self.cp = self.base_cp
 
         # Orbments and arts are populated by user_manager after load
@@ -65,7 +65,7 @@ class Character:
         self.crafts = [Craft("Autumn Leaf Cutter", self.str * 2, 20)]
         self.s_crafts = []
 
-        if self.level >= 5:
+        if self.level >= 3:
             self.crafts.append(Craft("Motivate", 0, 10))
         if self.level >= 15:
             self.crafts.append(Craft("Arc Slash", self.str * 2, 30))
@@ -73,8 +73,8 @@ class Character:
             self.crafts.append(Craft("Gale", self.str * 3, 35))
         if self.level >= 55:
             self.crafts.append(Craft("Flame Impact", self.str * 4, 35))
-        if self.level >= 10:
-            self.s_crafts.append(SCraft("S-Craft - Flame Slash", self.str * 10, 200))
+        if self.level >= 5:
+            self.s_crafts.append(SCraft("S-Craft - Flame Slash", self.str * 10, 100))
 
     def refresh_equipped_arts(self):
         """

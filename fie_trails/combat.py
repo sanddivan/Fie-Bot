@@ -7,6 +7,10 @@ import asyncio
 from fieemotes import emote
 from discord import Client, Message
 
+MAX_CP = 200
+CP_ON_HIT = 10
+CP_ON_HIT_RECEIVED = 5
+
 
 async def wait_for_digit_reply(client, author, channel, timeout=120.0):
     """Waits for a numeric message from a specific user in a specific channel."""
@@ -16,7 +20,6 @@ async def wait_for_digit_reply(client, author, channel, timeout=120.0):
             m.channel == channel and
             m.content.isdigit()
         )
-
     try:
         return await client.wait_for("message", check=check, timeout=timeout)
     except asyncio.TimeoutError:
@@ -31,71 +34,106 @@ async def fight(
 ) -> None:
     src_channel = message_obj.channel
 
+    # Start each fight with full CP
+    character.cp = MAX_CP
+
+    def gain_cp(amount: int):
+        character.cp = min(MAX_CP, character.cp + amount)
+
     async def choose_craft(character: Character):
-        craft_list = []
-        for i, craft in enumerate(character.crafts):
-            craft_list.append(f"{i + 1} - {craft}")
-        if character.s_crafts:
-            for i, s_craft in enumerate(character.s_crafts):
-                craft_list.append(f"{len(character.crafts) + i + 1} - {s_craft}")
-        await src_channel.send("\n".join(craft_list))
+        while True:
+            craft_list = []
+            for i, craft in enumerate(character.crafts):
+                entry = f"{i + 1} - {craft}"
+                if craft.cost > character.cp:
+                    entry = f"_{entry} (needs {craft.cost} CP)_"
+                craft_list.append(entry)
+            if character.s_crafts:
+                for i, s_craft in enumerate(character.s_crafts):
+                    idx = len(character.crafts) + i + 1
+                    entry = f"{idx} - {s_craft}"
+                    if s_craft.cost > character.cp:
+                        entry = f"_{entry} (needs {s_craft.cost} CP)_"
+                    craft_list.append(entry)
 
-        craft_choice = await wait_for_digit_reply(
-            client_obj, message_obj.author, message_obj.channel
-        )
+            await src_channel.send("\n".join(craft_list))
 
-        if craft_choice is None:
-            await src_channel.send(
-                f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
+            craft_choice = await wait_for_digit_reply(
+                client_obj, message_obj.author, message_obj.channel
             )
-            return None
 
-        craft_chosen = int(craft_choice.content)
-        num_crafts = len(character.crafts)
+            if craft_choice is None:
+                await src_channel.send(
+                    f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
+                )
+                return None
 
-        if craft_chosen <= num_crafts:
-            selected = character.crafts[craft_chosen - 1]
-        else:
-            selected = character.s_crafts[craft_chosen - num_crafts - 1]
+            craft_chosen = int(craft_choice.content)
+            num_crafts = len(character.crafts)
 
-        character.cp -= selected.cost
+            if craft_chosen <= num_crafts:
+                selected = character.crafts[craft_chosen - 1]
+            else:
+                selected = character.s_crafts[craft_chosen - num_crafts - 1]
 
-        if isinstance(selected, SCraft):
-            await src_channel.send("Aoki honoo yo...\n")
-            await asyncio.sleep(1)
-            await src_channel.send("Waga ken ni tsudoe!\n")
-            await asyncio.sleep(1)
-            await fieutils.send_file(
-                message_obj, "images/Rean_Schwarzer_S-Craft_Summer.png", False
-            )
-            await asyncio.sleep(0.5)
-            await src_channel.send("Haaaaaaaa... zan!\n")
-            await asyncio.sleep(2)
+            if selected.cost > character.cp:
+                await src_channel.send(
+                    f"Not enough CP! You have {character.cp}/{MAX_CP}. Pick another craft."
+                )
+                continue
 
-        return selected.damage
+            character.cp -= selected.cost
+
+            if isinstance(selected, SCraft):
+                await src_channel.send("Aoki honoo yo...\n")
+                await asyncio.sleep(1)
+                await src_channel.send("Waga ken ni tsudoe!\n")
+                await asyncio.sleep(1)
+                await fieutils.send_file(
+                    message_obj, "images/Rean_Schwarzer_S-Craft_Summer.png", False
+                )
+                await asyncio.sleep(0.5)
+                await src_channel.send("Haaaaaaaa... zan!\n")
+                await asyncio.sleep(2)
+
+            return selected.damage
 
     async def choose_art(character: Character):
-        art_list = []
-        for i, art in enumerate(character.equipped_arts):
-            art_list.append(f"{i + 1} - {art}")
-        await src_channel.send("\n".join(art_list))
+        while True:
+            art_list = []
+            for i, art in enumerate(character.equipped_arts):
+                entry = f"{i + 1} - {art}"
+                if art.cost > character.current_ep:
+                    entry = f"_{entry} (needs {art.cost} EP)_"
+                art_list.append(entry)
 
-        art_choice = await wait_for_digit_reply(
-            client_obj, message_obj.author, message_obj.channel
-        )
+            await src_channel.send("\n".join(art_list))
 
-        if art_choice is None:
-            await src_channel.send(
-                f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
+            art_choice = await wait_for_digit_reply(
+                client_obj, message_obj.author, message_obj.channel
             )
-            return None
 
-        art_chosen = int(art_choice.content)
-        character.ep -= character.equipped_arts[art_chosen - 1].cost
-        return character.equipped_arts[art_chosen - 1].damage
+            if art_choice is None:
+                await src_channel.send(
+                    f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
+                )
+                return None
+
+            art_chosen = int(art_choice.content)
+            selected_art = character.equipped_arts[art_chosen - 1]
+
+            if selected_art.cost > character.current_ep:
+                await src_channel.send(
+                    f"Not enough EP! You have {character.current_ep}/{character.ep}. Pick another art."
+                )
+                continue
+
+            character.current_ep -= selected_art.cost
+            return selected_art.damage
 
     async def character_turn(character: Character):
         await src_channel.send(
+            f"CP: {character.cp}/{MAX_CP} | EP: {character.current_ep}/{character.ep}\n"
             "Choose an action\n"
             "1 - Normal Attack\n"
             "2 - Crafts\n"
@@ -172,8 +210,11 @@ async def fight(
     async def start_fight(character: Character, enemy: Enemy):
         while character.current_hp > 0 and enemy.current_HP > 0:
             if character.spd >= enemy.SPD:
-                difference = dif(await character_turn(character) - enemy.getDEF())
+                # Character attacks
+                damage_dealt = await character_turn(character)
+                difference = dif(damage_dealt - enemy.getDEF())
                 enemy.set_current_HP(enemy.get_current_HP() - difference)
+                gain_cp(CP_ON_HIT)
                 await src_channel.send(
                     f"Enemy HP: {enemy.get_current_HP()} (-{difference})\n"
                 )
@@ -182,8 +223,11 @@ async def fight(
                 if await check_victory(enemy, character):
                     return
 
-                difference = dif(await enemy_turn(enemy) - character.dfs)
+                # Enemy attacks
+                damage_received = await enemy_turn(enemy)
+                difference = dif(damage_received - character.dfs)
                 character.current_hp -= difference
+                gain_cp(CP_ON_HIT_RECEIVED)
                 await src_channel.send(
                     f"Character HP: {character.current_hp} (-{difference})\n"
                 )
@@ -193,8 +237,11 @@ async def fight(
                     return
 
             else:
-                difference = dif(await enemy_turn(enemy) - character.dfs)
+                # Enemy attacks first
+                damage_received = await enemy_turn(enemy)
+                difference = dif(damage_received - character.dfs)
                 character.current_hp -= difference
+                gain_cp(CP_ON_HIT_RECEIVED)
                 await src_channel.send(
                     f"Character HP: {character.current_hp} (-{difference})\n"
                 )
@@ -203,8 +250,11 @@ async def fight(
                 if await check_defeat(character, enemy):
                     return
 
-                difference = dif(await character_turn(character) - enemy.getDEF())
+                # Character attacks
+                damage_dealt = await character_turn(character)
+                difference = dif(damage_dealt - enemy.getDEF())
                 enemy.set_current_HP(enemy.get_current_HP() - difference)
+                gain_cp(CP_ON_HIT)
                 await src_channel.send(
                     f"Enemy HP: {enemy.get_current_HP()} (-{difference})\n"
                 )
