@@ -474,25 +474,9 @@ def fie_response(user_input: str) -> str:
     elif "bruno lage" in user_input:
         return "Burro Lage"
 
-    elif any(msg in user_input for msg in
-             ["aaron",
-              "kastle",
-              "kay",
-              "professor",
-              "scooter",
-              "nana",
-              "sovy",
-              "hase",
-              "hiro",
-              "tartaruga",
-              ]):
-        return "Cool guy!"
-
     elif "demi" in user_input:
         return "Never heard of him!"
 
-    elif "fox" in user_input:
-        return "Cool guy! But needs to play trails!"
 
 
     #elif "fie" in user_input:

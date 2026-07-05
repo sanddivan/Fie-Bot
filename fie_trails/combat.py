@@ -2,6 +2,7 @@ import fieutils
 from fie_trails.character import Character
 from fie_trails.enemy import Enemy
 from fie_trails.scraft import SCraft
+from dataclasses import dataclass
 import random
 import asyncio
 from fieemotes import emote
@@ -10,6 +11,14 @@ from discord import Client, Message
 MAX_CP = 200
 CP_ON_HIT = 10
 CP_ON_HIT_RECEIVED = 5
+
+
+@dataclass
+class ActiveBuff:
+    label: str        # displayed to the user, e.g. "+25% ATK"
+    stat: str         # character attribute to boost, e.g. "str"
+    multiplier: float # e.g. 1.25 for a 25% boost
+    turns_left: int
 
 
 async def wait_for_digit_reply(client, author, channel, timeout=120.0):
@@ -34,11 +43,46 @@ async def fight(
 ) -> None:
     src_channel = message_obj.channel
 
-    # Start each fight with full CP
+    # Start each fight with full CP and no active buffs
     character.cp = MAX_CP
+    active_buffs: list[ActiveBuff] = []
 
     def gain_cp(amount: int):
         character.cp = min(MAX_CP, character.cp + amount)
+
+    def get_buffed_stat(stat: str) -> int:
+        """Return the character's stat with all active buffs applied."""
+        base = getattr(character, stat)
+        for buff in active_buffs:
+            if buff.stat == stat:
+                base = int(base * buff.multiplier)
+        return base
+
+    def apply_buff(new_buff: ActiveBuff):
+        """Add a buff, or reset its duration if it's already active."""
+        for buff in active_buffs:
+            if buff.stat == new_buff.stat and buff.label == new_buff.label:
+                buff.turns_left = new_buff.turns_left
+                return
+        active_buffs.append(new_buff)
+
+    async def tick_buffs():
+        """
+        Decrement all buff durations by 1 after a character turn.
+        Sends a message for any buff that just expired.
+        """
+        expired = [b for b in active_buffs if b.turns_left <= 1]
+        for buff in expired:
+            await src_channel.send(f"{buff.label} buff has worn off!")
+        active_buffs[:] = [b for b in active_buffs if b.turns_left > 1]
+        for buff in active_buffs:
+            buff.turns_left -= 1
+
+    def buffs_display() -> str:
+        if not active_buffs:
+            return ""
+        parts = [f"{b.label} ({b.turns_left} turns left)" for b in active_buffs]
+        return " | Buffs: " + ", ".join(parts)
 
     async def choose_craft(character: Character):
         while True:
@@ -56,6 +100,7 @@ async def fight(
                         entry = f"_{entry} (needs {s_craft.cost} CP)_"
                     craft_list.append(entry)
 
+            craft_list.append("0 - Go back")
             await src_channel.send("\n".join(craft_list))
 
             craft_choice = await wait_for_digit_reply(
@@ -66,10 +111,21 @@ async def fight(
                 await src_channel.send(
                     f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
                 )
-                return None, "physical"
+                return None, "buff"
 
             craft_chosen = int(craft_choice.content)
+
+            if craft_chosen == 0:
+                return None, "back"
+
             num_crafts = len(character.crafts)
+            total = num_crafts + len(character.s_crafts)
+
+            if craft_chosen > total:
+                await src_channel.send(
+                    f"That's not a valid choice! Pick a number between 1 and {total}."
+                )
+                continue
 
             if craft_chosen <= num_crafts:
                 selected = character.crafts[craft_chosen - 1]
@@ -84,6 +140,21 @@ async def fight(
 
             character.cp -= selected.cost
 
+            # Self-buff crafts have 0 multiplier
+            if selected.multiplier == 0.0:
+                if selected.name == "Motivate":
+                    apply_buff(ActiveBuff(
+                        label="+25% ATK",
+                        stat="str",
+                        multiplier=1.25,
+                        turns_left=4,
+                    ))
+                    await src_channel.send("Rean steels himself! +25% ATK for 4 turns.")
+                return 0, "buff"
+
+            # Calculate damage from buffed STR at the moment of use
+            damage = int(get_buffed_stat("str") * selected.multiplier)
+
             if isinstance(selected, SCraft):
                 await src_channel.send("Aoki honoo yo...\n")
                 await asyncio.sleep(1)
@@ -96,7 +167,7 @@ async def fight(
                 await src_channel.send("Haaaaaaaa... zan!\n")
                 await asyncio.sleep(2)
 
-            return selected.damage, "physical"
+            return damage, "craft"
 
     async def choose_art(character: Character):
         while True:
@@ -107,6 +178,7 @@ async def fight(
                     entry = f"_{entry} (needs {art.cost} EP)_"
                 art_list.append(entry)
 
+            art_list.append("0 - Go back")
             await src_channel.send("\n".join(art_list))
 
             art_choice = await wait_for_digit_reply(
@@ -120,6 +192,16 @@ async def fight(
                 return None, "art"
 
             art_chosen = int(art_choice.content)
+
+            if art_chosen == 0:
+                return None, "back"
+
+            if art_chosen > len(character.equipped_arts):
+                await src_channel.send(
+                    f"That's not a valid choice! Pick a number between 1 and {len(character.equipped_arts)}."
+                )
+                continue
+
             selected_art = character.equipped_arts[art_chosen - 1]
 
             if selected_art.cost > character.current_ep:
@@ -133,40 +215,49 @@ async def fight(
             return selected_art.damage + character.ats, "art"
 
     async def character_turn(character: Character):
-        await src_channel.send(
-            f"CP: {character.cp}/{MAX_CP} | EP: {character.current_ep}/{character.ep}\n"
-            "Choose an action\n"
-            "1 - Normal Attack\n"
-            "2 - Crafts\n"
-            "3 - Arts\n"
-            "4 - Items\n"
-        )
-
-        combat_choice = await wait_for_digit_reply(
-            client_obj, message_obj.author, message_obj.channel
-        )
-
-        if combat_choice is None:
+        while True:
             await src_channel.send(
-                f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
+                f"CP: {character.cp}/{MAX_CP} | "
+                f"EP: {character.current_ep}/{character.ep}"
+                f"{buffs_display()}\n"
+                "Choose an action\n"
+                "1 - Normal Attack\n"
+                "2 - Crafts\n"
+                "3 - Arts\n"
+                "4 - Items\n"
             )
-            return None, "physical"
 
-        option = int(combat_choice.content)
-        match option:
-            case 1:
-                return character.str, "physical"
-            case 2:
-                return await choose_craft(character)
-            case 3:
-                return await choose_art(character)
-            case 4:
-                return 0, "physical"
-            case _:
+            combat_choice = await wait_for_digit_reply(
+                client_obj, message_obj.author, message_obj.channel
+            )
+
+            if combat_choice is None:
                 await src_channel.send(
-                    "Are you serious? All you have to do is choose between 1 and 4..."
+                    f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
                 )
-                return 0, "physical"
+                return None, "physical"
+
+            option = int(combat_choice.content)
+            match option:
+                case 1:
+                    return get_buffed_stat("str"), "physical"
+                case 2:
+                    result = await choose_craft(character)
+                    if result[1] == "back":
+                        continue
+                    return result
+                case 3:
+                    result = await choose_art(character)
+                    if result[1] == "back":
+                        continue
+                    return result
+                case 4:
+                    return 0, "buff"
+                case _:
+                    await src_channel.send(
+                        "Are you serious? All you have to do is choose between 1 and 4..."
+                    )
+                    continue
 
     async def enemy_turn(enemy: Enemy):
         choice = random.randint(0, len(enemy.crafts))
@@ -208,26 +299,32 @@ async def fight(
     def dif(difference: int) -> int:
         return max(0, difference)
 
+    async def resolve_character_action(damage_dealt, damage_type):
+        """Apply damage and CP gain for a character action."""
+        if damage_type == "buff":
+            return
+        elif damage_type == "art":
+            difference = dif(damage_dealt - enemy.get_adf())
+        else:  # "physical" or "craft"
+            difference = dif(damage_dealt - enemy.get_def())
+
+        enemy.set_current_hp(enemy.get_current_hp() - difference)
+        gain_cp(CP_ON_HIT)
+        await src_channel.send(
+            f"Enemy HP: {enemy.get_current_hp()} (-{difference})\n"
+        )
+        await asyncio.sleep(1)
+
     async def start_fight(character: Character, enemy: Enemy):
         while character.current_hp > 0 and enemy.current_HP > 0:
             if character.spd >= enemy.SPD:
-                # Character attacks
                 damage_dealt, damage_type = await character_turn(character)
-                if damage_type == "art":
-                    difference = dif(damage_dealt - enemy.get_adf())
-                else:
-                    difference = dif(damage_dealt - enemy.get_def())
-                enemy.set_current_hp(enemy.get_current_hp() - difference)
-                gain_cp(CP_ON_HIT)
-                await src_channel.send(
-                    f"Enemy HP: {enemy.get_current_hp()} (-{difference})\n"
-                )
-                await asyncio.sleep(1)
+                await tick_buffs()
+                await resolve_character_action(damage_dealt, damage_type)
 
                 if await check_victory(enemy, character):
                     return
 
-                # Enemy attacks
                 damage_received = await enemy_turn(enemy)
                 difference = dif(damage_received - character.dfs)
                 character.current_hp -= difference
@@ -241,7 +338,6 @@ async def fight(
                     return
 
             else:
-                # Enemy attacks first
                 damage_received = await enemy_turn(enemy)
                 difference = dif(damage_received - character.dfs)
                 character.current_hp -= difference
@@ -254,18 +350,9 @@ async def fight(
                 if await check_defeat(character, enemy):
                     return
 
-                # Character attacks
                 damage_dealt, damage_type = await character_turn(character)
-                if damage_type == "art":
-                    difference = dif(damage_dealt - enemy.get_adf())
-                else:
-                    difference = dif(damage_dealt - enemy.get_def())
-                enemy.set_current_hp(enemy.get_current_hp() - difference)
-                gain_cp(CP_ON_HIT)
-                await src_channel.send(
-                    f"Enemy HP: {enemy.get_current_hp()} (-{difference})\n"
-                )
-                await asyncio.sleep(1)
+                await tick_buffs()
+                await resolve_character_action(damage_dealt, damage_type)
 
                 if await check_victory(enemy, character):
                     return

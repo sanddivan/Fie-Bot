@@ -13,7 +13,7 @@ class Character:
 
     # Base stats
     base_max_hp: int = 500
-    base_ep: int = 200
+    base_ep: int = 100
     base_cp: int = 0
     base_str: int = 20
     base_def: int = 15
@@ -50,7 +50,7 @@ class Character:
         self.level = self.calculate_level()
         self.refresh_stats()
         self.current_hp = self.max_hp
-        self.current_ep = self.ep
+        self.current_ep = self.base_ep
         self.cp = self.base_cp
 
         # Orbments and arts are populated by user_manager after load
@@ -62,19 +62,19 @@ class Character:
 
     def initialize_rean(self):
         """Unlock crafts and s-crafts based on current level."""
-        self.crafts = [Craft("Autumn Leaf Cutter", self.str * 2, 20)]
+        self.crafts = [Craft("Autumn Leaf Cutter", 2.0, 20)]
         self.s_crafts = []
 
         if self.level >= 3:
-            self.crafts.append(Craft("Motivate", 0, 10))
+            self.crafts.append(Craft("Motivate", 0.0, 10))
+        if self.level >= 10:
+            self.crafts.append(Craft("Arc Slash", 2.0, 30))
         if self.level >= 15:
-            self.crafts.append(Craft("Arc Slash", self.str * 2, 30))
-        if self.level >= 35:
-            self.crafts.append(Craft("Gale", self.str * 3, 35))
-        if self.level >= 55:
-            self.crafts.append(Craft("Flame Impact", self.str * 4, 35))
+            self.crafts.append(Craft("Gale", 3.0, 35))
+        if self.level >= 25:
+            self.crafts.append(Craft("Flame Impact", 4.0, 35))
         if self.level >= 5:
-            self.s_crafts.append(SCraft("S-Craft - Flame Slash", self.str * 10, 100))
+            self.s_crafts.append(SCraft("S-Craft - Flame Slash", 10.0, 200))
 
     def refresh_equipped_arts(self):
         """

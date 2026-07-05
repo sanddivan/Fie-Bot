@@ -2,7 +2,7 @@ import json
 import os
 from discord import Client, Message
 from fie_trails.enemy import Enemy
-from fie_trails.craft import Craft
+from fie_trails.enemy_craft import EnemyCraft
 import asyncio
 
 ENEMIES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "enemies.json")
@@ -16,7 +16,7 @@ def _load_all() -> list[dict]:
 def build_enemy(boss_data: dict) -> Enemy:
     """Construct an Enemy instance from a boss dict."""
     crafts = [
-        Craft(
+        EnemyCraft(
             c["name"],
             boss_data["str"] * c["damage_multiplier"],
             c["cost"],
@@ -25,17 +25,17 @@ def build_enemy(boss_data: dict) -> Enemy:
     ]
     return Enemy(
         boss_data["name"],
-        boss_data["max_hp"],  # max_HP
-        boss_data["max_hp"],  # current_HP
-        boss_data["max_cp"],  # EP
-        boss_data["max_cp"],  # CP
-        boss_data["str"],  # STR
-        boss_data["def"],  # DEF
-        boss_data["spd"],  # SPD
-        boss_data["ats"],  # ATS
-        boss_data["adf"],  # ADF
-        1,  # level
-        boss_data["xp_reward"],  # xp
+        boss_data["max_hp"],        # max_HP
+        boss_data["max_hp"],        # current_HP
+        boss_data["max_cp"],        # EP
+        boss_data["max_cp"],        # CP
+        boss_data["str"],           # STR
+        boss_data["def"],           # DEF
+        boss_data["spd"],           # SPD
+        boss_data["ats"],           # ATS
+        boss_data["adf"],           # ADF
+        1,                          # level
+        boss_data["xp_reward"],     # xp
         crafts,
     )
 
