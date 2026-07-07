@@ -2,6 +2,7 @@ import fieutils
 from fie_trails.character import Character
 from fie_trails.enemy import Enemy
 from fie_trails.scraft import SCraft
+from fie_trails import item_manager
 from dataclasses import dataclass
 import random
 import asyncio
@@ -40,6 +41,7 @@ async def fight(
     message_obj: Message,
     character: Character,
     enemy: Enemy,
+    inventory: list[dict],
 ) -> None:
     src_channel = message_obj.channel
 
@@ -215,6 +217,7 @@ async def fight(
             return selected_art.damage + character.ats, "art"
 
     async def character_turn(character: Character):
+        nonlocal inventory
         while True:
             await src_channel.send(
                 f"CP: {character.cp}/{MAX_CP} | "
@@ -252,7 +255,13 @@ async def fight(
                         continue
                     return result
                 case 4:
-                    return 0, "buff"
+                    inventory, result = await item_manager.show_inventory_in_combat(
+                        client_obj, message_obj, character, inventory
+                    )
+                    if result == "back" or result == "empty":
+                        continue
+                    await src_channel.send(result)
+                    return 0, "buff"  # item use consumes a turn but deals no damage
                 case _:
                     await src_channel.send(
                         "Are you serious? All you have to do is choose between 1 and 4..."

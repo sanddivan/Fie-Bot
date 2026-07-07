@@ -10,6 +10,7 @@ from fie_trails.scraft import SCraft
 class Character:
     name: str
     current_xp: int
+    mira: int = 0
 
     # Base stats
     base_max_hp: int = 500
@@ -50,7 +51,7 @@ class Character:
         self.level = self.calculate_level()
         self.refresh_stats()
         self.current_hp = self.max_hp
-        self.current_ep = self.base_ep
+        self.current_ep = self.ep
         self.cp = self.base_cp
 
         # Orbments and arts are populated by user_manager after load
@@ -65,15 +66,15 @@ class Character:
         self.crafts = [Craft("Autumn Leaf Cutter", 2.0, 20)]
         self.s_crafts = []
 
-        if self.level >= 3:
-            self.crafts.append(Craft("Motivate", 0.0, 10))
-        if self.level >= 10:
-            self.crafts.append(Craft("Arc Slash", 2.0, 30))
-        if self.level >= 15:
-            self.crafts.append(Craft("Gale", 3.0, 35))
-        if self.level >= 25:
-            self.crafts.append(Craft("Flame Impact", 4.0, 35))
         if self.level >= 5:
+            self.crafts.append(Craft("Motivate", 0.0, 10))
+        if self.level >= 15:
+            self.crafts.append(Craft("Arc Slash", 2.0, 30))
+        if self.level >= 35:
+            self.crafts.append(Craft("Gale", 3.0, 35))
+        if self.level >= 55:
+            self.crafts.append(Craft("Flame Impact", 4.0, 35))
+        if self.level >= 10:
             self.s_crafts.append(SCraft("S-Craft - Flame Slash", 10.0, 200))
 
     def refresh_equipped_arts(self):

@@ -1,0 +1,58 @@
+{
+    "items": [
+        {
+            "id": "tear_balm",
+            "name": "Tear Balm",
+            "description": "Restores 30% of max HP",
+            "effect": "heal_hp",
+            "power": 0.30,
+            "price": 100,
+            "unlocked_by": null
+        },
+        {
+            "id": "teara_balm",
+            "name": "Teara Balm",
+            "description": "Restores 60% of max HP",
+            "effect": "heal_hp",
+            "power": 0.60,
+            "price": 250,
+            "unlocked_by": "dino"
+        },
+        {
+            "id": "celestial_balm",
+            "name": "Celestial Balm",
+            "description": "Restores 100% of max HP",
+            "effect": "heal_hp",
+            "power": 1.0,
+            "price": 1000,
+            "unlocked_by": "grunoja"
+        },
+        {
+            "id": "ep_charge",
+            "name": "EP Charge",
+            "description": "Restores 30% of max EP",
+            "effect": "heal_ep",
+            "power": 0.30,
+            "price": 100,
+            "unlocked_by": "gargoyle"
+        },
+        {
+            "id": "ep_charge_2",
+            "name": "EP Charge II",
+            "description": "Restores 60% of max EP",
+            "effect": "heal_ep",
+            "power": 0.60,
+            "price": 250,
+            "unlocked_by": "dino"
+        },
+      {
+            "id": "ep_charge_3",
+            "name": "EP Charge III",
+            "description": "Restores 100% of max EP",
+            "effect": "heal_ep",
+            "power": 1.0,
+            "price": 500,
+            "unlocked_by": "dino"
+        }
+    ]
+}

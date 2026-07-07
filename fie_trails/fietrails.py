@@ -1,6 +1,6 @@
 from discord import Client, Message
 from fie_trails.customization import change_orbments
-from fie_trails import user_manager, enemy_manager, orbment_manager
+from fie_trails import user_manager, enemy_manager, orbment_manager, item_manager
 from fie_trails.combat import fight
 from fieemotes import emote
 import asyncio
@@ -25,15 +25,16 @@ async def fie_trails(client_obj: Client, message_obj: Message):
     src_channel = message_obj.channel
     user_id = message_obj.author.id
 
-    character, unlocked_bosses = user_manager.load(user_id)
+    character, unlocked_bosses, inventory = user_manager.load(user_id)
 
     while True:
         await src_channel.send(
-            "Welcome back! What do you want to do?\n"
+            "What do you want to do?\n"
             "1 - Fight\n"
             "2 - Change Equipment\n"
             "3 - Change Orbments\n"
             "4 - Check status\n"
+            "5 - Shop\n"
             "0 - Quit\n"
         )
 
@@ -60,12 +61,19 @@ async def fie_trails(client_obj: Client, message_obj: Message):
                     continue
 
                 enemy, boss_data = result
-                await fight(client_obj, message_obj, character, enemy)
+                await fight(client_obj, message_obj, character, enemy, inventory)
 
                 if character.current_hp > 0:
                     # Unlock next boss
                     unlocked_bosses = user_manager.unlock_next_boss(
                         unlocked_bosses, boss_data
+                    )
+
+                    # Award mira
+                    character.mira += boss_data.get("mira_reward", 0)
+                    await src_channel.send(
+                        f"Mira obtained: {boss_data.get('mira_reward', 0)} "
+                        f"(Total: {character.mira})"
                     )
 
                     # Roll and award orbment drops
@@ -77,17 +85,24 @@ async def fie_trails(client_obj: Client, message_obj: Message):
                         names = ", ".join(new_orbments)
                         await src_channel.send(f"Orbment obtained: {names}!")
 
-                user_manager.save(user_id, character, unlocked_bosses)
+                user_manager.save(user_id, character, unlocked_bosses, inventory)
 
             case 2:
                 await src_channel.send("Work in progress!")
 
             case 3:
                 await change_orbments(client_obj, message_obj, character)
+                user_manager.save(user_id, character, unlocked_bosses, inventory)
 
             case 4:
                 await fieutils.send_file(message_obj, "images/Rean_Menu_CSI.png", False)
                 await src_channel.send(character.status())
+
+            case 5:
+                inventory, _ = await item_manager.show_shop(
+                    client_obj, message_obj, character, inventory, unlocked_bosses
+                )
+                user_manager.save(user_id, character, unlocked_bosses, inventory)
 
             case 0:
                 await src_channel.send(f"Until next time! {emote('WAVE')}\n")
@@ -95,5 +110,5 @@ async def fie_trails(client_obj: Client, message_obj: Message):
 
             case _:
                 await src_channel.send(
-                    "Are you serious? All you have to do is choose between 0 and 4...\n"
+                    "Are you serious? All you have to do is choose between 0 and 5...\n"
                 )

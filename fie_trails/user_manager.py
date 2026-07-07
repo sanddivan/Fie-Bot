@@ -1,7 +1,7 @@
 import json
 import os
 from fie_trails.character import Character
-from fie_trails import orbment_manager
+from fie_trails import orbment_manager, item_manager
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "users")
 DEFAULT_FIRST_BOSS = "gargoyle"
@@ -18,17 +18,19 @@ def _default_save() -> dict:
         "character": {
             "name": "Rean Schwarzer",
             "current_xp": 0,
+            "mira": 0,
         },
         "unlocked_bosses": [DEFAULT_FIRST_BOSS],
         "owned_orbments": [],
         "equipped_orbments": [None] * SLOTS,
+        "inventory": [],
     }
 
 
-def load(user_id: int) -> tuple[Character, list[str]]:
+def load(user_id: int) -> tuple[Character, list[str], list[dict]]:
     """
     Load a user's save. Creates a default save if none exists.
-    Returns (character, unlocked_boss_ids).
+    Returns (character, unlocked_boss_ids, inventory).
     """
     path = _user_path(user_id)
 
@@ -43,6 +45,7 @@ def load(user_id: int) -> tuple[Character, list[str]]:
     character = Character(
         name=char_data["name"],
         current_xp=char_data["current_xp"],
+        mira=char_data.get("mira", 0),
     )
 
     # Resolve orbment IDs into objects and apply to character
@@ -55,14 +58,21 @@ def load(user_id: int) -> tuple[Character, list[str]]:
     character.refresh_equipped_arts()
     character.initialize_rean()
 
-    return character, save["unlocked_bosses"]
+    # Validate inventory against current items.json
+    inventory = item_manager.resolve_inventory(save.get("inventory", []))
+
+    return character, save["unlocked_bosses"], inventory
 
 
-def save(user_id: int, character: Character, unlocked_bosses: list[str]) -> None:
-    """Persist XP, unlocked bosses, and orbment state for a user."""
+def save(
+    user_id: int,
+    character: Character,
+    unlocked_bosses: list[str],
+    inventory: list[dict],
+) -> None:
+    """Persist character state, unlocked bosses, orbments, mira and inventory."""
     path = _user_path(user_id)
 
-    # Serialize orbments back to IDs for storage
     all_defs = orbment_manager._load_all()
     name_to_id = {v["name"]: k for k, v in all_defs.items()}
 
@@ -80,10 +90,12 @@ def save(user_id: int, character: Character, unlocked_bosses: list[str]) -> None
         "character": {
             "name": character.name,
             "current_xp": character.current_xp,
+            "mira": character.mira,
         },
         "unlocked_bosses": unlocked_bosses,
         "owned_orbments": owned_ids,
         "equipped_orbments": equipped_ids,
+        "inventory": inventory,
     }
     _write(path, data)
 
@@ -96,8 +108,7 @@ def add_orbment_drops(
 ) -> list[str]:
     """
     Add dropped orbment IDs to the character's available pool,
-    skipping any already owned or equipped. Returns the list of
-    actually new orbment names for the victory message.
+    skipping any already owned or equipped. Returns new orbment names.
     """
     all_defs = orbment_manager._load_all()
     name_to_id = {v["name"]: k for k, v in all_defs.items()}
@@ -120,11 +131,7 @@ def add_orbment_drops(
 
 
 def unlock_next_boss(unlocked_bosses: list[str], beaten_boss: dict) -> list[str]:
-    """
-    Given the boss dict from enemies.json that was just beaten,
-    unlock the next boss if there is one and it isn't already unlocked.
-    Returns the updated unlocked_bosses list.
-    """
+    """Unlock the next boss in the chain if not already unlocked."""
     next_boss = beaten_boss.get("unlocks_next")
     if next_boss and next_boss not in unlocked_bosses:
         unlocked_bosses.append(next_boss)
