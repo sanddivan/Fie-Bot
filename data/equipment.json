@@ -1,0 +1,134 @@
+{
+    "weapons": [
+        {
+            "id": "kazekiri",
+            "name": "Kazekiri",
+            "str_bonus": 10,
+            "price": 100,
+            "unlocked_by": null
+        },
+        {
+            "id": "uzuki",
+            "name": "Uzuki",
+            "str_bonus": 20,
+            "price": 300,
+            "unlocked_by": "gargoyle"
+        },
+        {
+            "id": "kogitsunemaru",
+            "name": "Kogitsunemaru",
+            "str_bonus": 30,
+            "price": 600,
+            "unlocked_by": "gargoyle"
+        },
+        {
+            "id": "nowaki_no_tachi",
+            "name": "Nowaki no Tachi",
+            "str_bonus": 40,
+            "price": 1000,
+            "unlocked_by": "dino"
+        },
+        {
+            "id": "sasameyuki",
+            "name": "Sasameyuki",
+            "str_bonus": 50,
+            "price": 1500,
+            "unlocked_by": "dino"
+        },
+        {
+            "id": "hakuu",
+            "name": "Hakuu",
+            "str_bonus": 60,
+            "price": 2200,
+            "unlocked_by": "grunoja"
+        },
+        {
+            "id": "fuji_ichimonji",
+            "name": "Fuji Ichimonji",
+            "str_bonus": 70,
+            "price": 3000,
+            "unlocked_by": "grunoja"
+        },
+        {
+            "id": "yakou",
+            "name": "Yakou",
+            "str_bonus": 80,
+            "price": 4000,
+            "unlocked_by": "grunoja"
+        },
+        {
+            "id": "byakuya",
+            "name": "Byakuya",
+            "str_bonus": 90,
+            "price": 5000,
+            "unlocked_by": "grunoja"
+        }
+    ],
+    "armors": [
+        {
+            "id": "leather_guard",
+            "name": "Leather Guard",
+            "def_bonus": 10,
+            "adf_bonus": 10,
+            "price": 100,
+            "unlocked_by": null
+        },
+        {
+            "id": "armored_vest",
+            "name": "Armored Vest",
+            "def_bonus": 20,
+            "adf_bonus": 20,
+            "price": 300,
+            "unlocked_by": "gargoyle"
+        },
+        {
+            "id": "sturdy_leather",
+            "name": "Sturdy Leather",
+            "def_bonus": 30,
+            "adf_bonus": 30,
+            "price": 600,
+            "unlocked_by": "gargoyle"
+        },
+        {
+            "id": "titanium_coat",
+            "name": "Titanium Coat",
+            "def_bonus": 40,
+            "adf_bonus": 40,
+            "price": 1000,
+            "unlocked_by": "dino"
+        },
+        {
+            "id": "golden_mail",
+            "name": "Golden Mail",
+            "def_bonus": 50,
+            "adf_bonus": 50,
+            "price": 1500,
+            "unlocked_by": "dino"
+        },
+        {
+            "id": "battle_coat",
+            "name": "Battle Coat",
+            "def_bonus": 60,
+            "adf_bonus": 60,
+            "price": 2200,
+            "unlocked_by": "grunoja"
+        },
+        {
+            "id": "shield_jacket",
+            "name": "Shield Jacket",
+            "def_bonus": 70,
+            "adf_bonus": 70,
+            "price": 3000,
+            "unlocked_by": "grunoja"
+        },
+        {
+            "id": "aura_jacket",
+            "name": "Aura Jacket",
+            "def_bonus": 80,
+            "adf_bonus": 80,
+            "price": 4000,
+            "unlocked_by": "grunoja"
+        }
+    ],
+    "accessories": []
+}

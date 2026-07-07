@@ -6,6 +6,8 @@ from fie_trails import orbment_manager, item_manager
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "users")
 DEFAULT_FIRST_BOSS = "gargoyle"
 SLOTS = 6
+DEFAULT_WEAPON = "kazekiri"
+DEFAULT_ARMOR = "leather_guard"
 
 
 def _user_path(user_id: int) -> str:
@@ -24,13 +26,22 @@ def _default_save() -> dict:
         "owned_orbments": [],
         "equipped_orbments": [None] * SLOTS,
         "inventory": [],
+        "eq_inventory": [
+            {"id": DEFAULT_WEAPON, "slot": "weapon"},
+            {"id": DEFAULT_ARMOR, "slot": "armor"},
+        ],
+        "equipped": {
+            "weapon": DEFAULT_WEAPON,
+            "armor": DEFAULT_ARMOR,
+            "accessory": None,
+        },
     }
 
 
-def load(user_id: int) -> tuple[Character, list[str], list[dict]]:
+def load(user_id: int) -> tuple[Character, list[str], list[dict], list[dict]]:
     """
     Load a user's save. Creates a default save if none exists.
-    Returns (character, unlocked_boss_ids, inventory).
+    Returns (character, unlocked_boss_ids, inventory, eq_inventory).
     """
     path = _user_path(user_id)
 
@@ -48,20 +59,29 @@ def load(user_id: int) -> tuple[Character, list[str], list[dict]]:
         mira=char_data.get("mira", 0),
     )
 
-    # Resolve orbment IDs into objects and apply to character
+    # Resolve orbments
     character.available_orbments = orbment_manager.resolve_owned(
         save.get("owned_orbments", [])
     )
     character.equipped_orbments = orbment_manager.resolve_equipped(
         save.get("equipped_orbments", [None] * SLOTS)
     )
-    character.refresh_equipped_arts()
+
+    # Restore equipped equipment then apply all bonuses
+    character.equipped = save.get("equipped", {
+        "weapon": DEFAULT_WEAPON,
+        "armor": DEFAULT_ARMOR,
+        "accessory": None,
+    })
+    character.refresh_equipped_arts()  # also calls apply_orbment_bonuses → apply_equipment_bonuses
     character.initialize_rean()
 
-    # Validate inventory against current items.json
     inventory = item_manager.resolve_inventory(save.get("inventory", []))
 
-    return character, save["unlocked_bosses"], inventory
+    from fie_trails.equipment_manager import resolve_equipment_inventory
+    eq_inventory = resolve_equipment_inventory(save.get("eq_inventory", []))
+
+    return character, save["unlocked_bosses"], inventory, eq_inventory
 
 
 def save(
@@ -69,8 +89,9 @@ def save(
     character: Character,
     unlocked_bosses: list[str],
     inventory: list[dict],
+    eq_inventory: list[dict],
 ) -> None:
-    """Persist character state, unlocked bosses, orbments, mira and inventory."""
+    """Persist all user state."""
     path = _user_path(user_id)
 
     all_defs = orbment_manager._load_all()
@@ -96,6 +117,8 @@ def save(
         "owned_orbments": owned_ids,
         "equipped_orbments": equipped_ids,
         "inventory": inventory,
+        "eq_inventory": eq_inventory,
+        "equipped": character.equipped,
     }
     _write(path, data)
 
@@ -106,10 +129,6 @@ def add_orbment_drops(
     unlocked_bosses: list[str],
     dropped_ids: list[str],
 ) -> list[str]:
-    """
-    Add dropped orbment IDs to the character's available pool,
-    skipping any already owned or equipped. Returns new orbment names.
-    """
     all_defs = orbment_manager._load_all()
     name_to_id = {v["name"]: k for k, v in all_defs.items()}
 
@@ -131,7 +150,6 @@ def add_orbment_drops(
 
 
 def unlock_next_boss(unlocked_bosses: list[str], beaten_boss: dict) -> list[str]:
-    """Unlock the next boss in the chain if not already unlocked."""
     next_boss = beaten_boss.get("unlocks_next")
     if next_boss and next_boss not in unlocked_bosses:
         unlocked_bosses.append(next_boss)

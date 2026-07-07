@@ -37,7 +37,7 @@ def fie_time(dest_channel_id: int) -> str:
     # there are better approaches to take. And I'm getting a very cool idea but
     # need to cook it more :)
     utc = datetime.now(UTC)
-    azores = utc - timedelta(hours=1)
+    azores = utc - timedelta(hours=0)
 
     if dest_channel_id == 420709830622183434 or dest_channel_id == 420706417721475082:
         costa_rica = utc - timedelta(hours=6)
@@ -61,12 +61,14 @@ def fie_time(dest_channel_id: int) -> str:
 
     us_west = utc - timedelta(hours=7)
     us_east = utc - timedelta(hours=4)
+    vietnam = utc + timedelta(hours=7)
     aus_west = utc + timedelta(hours=8)
-    uk = utc + timedelta(hours=0)
+    uk = utc + timedelta(hours=1)
     return (f"US West Coast (UTC-7): {datetime_to_casual(us_west)}\n"
             f"US East Coast (UTC-4): {datetime_to_casual(us_east)}\n"
             f"Azores (UTC): {datetime_to_casual(azores)}\n"
             f"UK (UTC+1): {datetime_to_casual(uk)}\n"
+            f"Vietnam (UTC+7): {datetime_to_casual(vietnam)}\n"
             f"Western Australia (UTC+8): {datetime_to_casual(aus_west)}")
 
 

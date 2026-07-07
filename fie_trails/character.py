@@ -46,6 +46,11 @@ class Character:
     available_orbments: list["Orbment"] = field(init=False, default_factory=list)
     equipped_orbments: list["Orbment | None"] = field(init=False, default_factory=list)
     equipped_arts: list["Art"] = field(init=False, default_factory=list)
+    equipped: dict = field(init=False, default_factory=lambda: {
+        "weapon": None,
+        "armor": None,
+        "accessory": None,
+    })
 
     def __post_init__(self):
         self.level = self.calculate_level()
@@ -69,13 +74,13 @@ class Character:
         if self.level >= 5:
             self.crafts.append(Craft("Motivate", 0.0, 10))
         if self.level >= 15:
-            self.crafts.append(Craft("Arc Slash", 2.0, 30))
+            self.crafts.append(Craft("Arc Slash", 2.5, 30))
         if self.level >= 35:
             self.crafts.append(Craft("Gale", 3.0, 35))
         if self.level >= 55:
-            self.crafts.append(Craft("Flame Impact", 4.0, 35))
+            self.crafts.append(Craft("Flame Impact", 4.0, 45))
         if self.level >= 10:
-            self.s_crafts.append(SCraft("S-Craft - Flame Slash", 10.0, 200))
+            self.s_crafts.append(SCraft("S-Craft - Flame Slash", 8.0, 200))
 
     def refresh_equipped_arts(self):
         """
@@ -92,15 +97,28 @@ class Character:
     def apply_orbment_bonuses(self):
         """
         Reset stats to their base scaled values, then add bonuses
-        from all currently equipped orbments.
+        from all currently equipped orbments and equipment.
         """
         self.refresh_stats()
+        self.apply_equipment_bonuses()
         for slot in self.equipped_orbments:
             if slot is None or not slot.stat or not slot.status_change:
                 continue
             current = getattr(self, slot.stat, None)
             if current is not None:
                 setattr(self, slot.stat, current + slot.status_change)
+
+    def apply_equipment_bonuses(self):
+        """Apply stat bonuses from equipped weapon, armor and accessory."""
+        from fie_trails.equipment_manager import get_stat_bonuses
+        for item_id in self.equipped.values():
+            if item_id is None:
+                continue
+            for stat, bonus in get_stat_bonuses(item_id).items():
+                attr = stat.replace("_bonus", "")
+                current = getattr(self, attr, None)
+                if current is not None:
+                    setattr(self, attr, current + bonus)
 
     def set_xp(self, xp: int):
         self.current_xp = xp

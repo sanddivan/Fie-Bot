@@ -1,6 +1,6 @@
 from discord import Client, Message
+from fie_trails import user_manager, enemy_manager, orbment_manager, item_manager, equipment_manager
 from fie_trails.customization import change_orbments
-from fie_trails import user_manager, enemy_manager, orbment_manager, item_manager
 from fie_trails.combat import fight
 from fieemotes import emote
 import asyncio
@@ -8,7 +8,6 @@ import fieutils
 
 
 async def wait_for_digit_reply(client, author, channel, timeout=120.0):
-    """Waits for a numeric message from a specific user in a specific channel."""
     def check(m):
         return (
             m.author == author
@@ -25,10 +24,11 @@ async def fie_trails(client_obj: Client, message_obj: Message):
     src_channel = message_obj.channel
     user_id = message_obj.author.id
 
-    character, unlocked_bosses, inventory = user_manager.load(user_id)
+    character, unlocked_bosses, inventory, eq_inventory = user_manager.load(user_id)
 
     while True:
         await src_channel.send(
+            f"Welcome back! You have {character.mira} mira.\n"
             "What do you want to do?\n"
             "1 - Fight\n"
             "2 - Change Equipment\n"
@@ -39,10 +39,7 @@ async def fie_trails(client_obj: Client, message_obj: Message):
         )
 
         menu_choice = await wait_for_digit_reply(
-            client_obj,
-            message_obj.author,
-            message_obj.channel,
-            timeout=120.0,
+            client_obj, message_obj.author, message_obj.channel, timeout=120.0
         )
 
         if menu_choice is None:
@@ -64,45 +61,67 @@ async def fie_trails(client_obj: Client, message_obj: Message):
                 await fight(client_obj, message_obj, character, enemy, inventory)
 
                 if character.current_hp > 0:
-                    # Unlock next boss
                     unlocked_bosses = user_manager.unlock_next_boss(
                         unlocked_bosses, boss_data
                     )
-
-                    # Award mira
                     character.mira += boss_data.get("mira_reward", 0)
                     await src_channel.send(
                         f"Mira obtained: {boss_data.get('mira_reward', 0)} "
                         f"(Total: {character.mira})"
                     )
-
-                    # Roll and award orbment drops
                     dropped_ids = orbment_manager.roll_drops(boss_data)
                     new_orbments = user_manager.add_orbment_drops(
                         user_id, character, unlocked_bosses, dropped_ids
                     )
                     if new_orbments:
-                        names = ", ".join(new_orbments)
-                        await src_channel.send(f"Orbment obtained: {names}!")
+                        await src_channel.send(f"Orbment obtained: {', '.join(new_orbments)}!")
 
-                user_manager.save(user_id, character, unlocked_bosses, inventory)
+                user_manager.save(user_id, character, unlocked_bosses, inventory, eq_inventory)
 
             case 2:
-                await src_channel.send("Work in progress!")
+                character.equipped, eq_inventory = await equipment_manager.change_equipment(
+                    client_obj, message_obj, character.equipped, eq_inventory
+                )
+                # Reapply bonuses after equipment change
+                character.apply_orbment_bonuses()
+                user_manager.save(user_id, character, unlocked_bosses, inventory, eq_inventory)
 
             case 3:
                 await change_orbments(client_obj, message_obj, character)
-                user_manager.save(user_id, character, unlocked_bosses, inventory)
+                user_manager.save(user_id, character, unlocked_bosses, inventory, eq_inventory)
 
             case 4:
                 await fieutils.send_file(message_obj, "images/Rean_Menu_CSI.png", False)
                 await src_channel.send(character.status())
 
             case 5:
-                inventory, _ = await item_manager.show_shop(
-                    client_obj, message_obj, character, inventory, unlocked_bosses
+                # Ask whether to browse items or equipment
+                await src_channel.send(
+                    "What would you like to buy?\n"
+                    "1 - Items\n"
+                    "2 - Equipment\n"
+                    "0 - Back\n"
                 )
-                user_manager.save(user_id, character, unlocked_bosses, inventory)
+                shop_choice = await wait_for_digit_reply(
+                    client_obj, message_obj.author, message_obj.channel
+                )
+                if shop_choice is None or int(shop_choice.content) == 0:
+                    continue
+
+                match int(shop_choice.content):
+                    case 1:
+                        inventory, _ = await item_manager.show_shop(
+                            client_obj, message_obj, character, inventory, unlocked_bosses
+                        )
+                    case 2:
+                        eq_inventory, character.mira = await equipment_manager.show_equipment_shop(
+                            client_obj, message_obj, character.mira, eq_inventory, unlocked_bosses
+                        )
+                    case _:
+                        await src_channel.send("Please choose 1 or 2.")
+                        continue
+
+                user_manager.save(user_id, character, unlocked_bosses, inventory, eq_inventory)
 
             case 0:
                 await src_channel.send(f"Until next time! {emote('WAVE')}\n")
