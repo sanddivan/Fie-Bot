@@ -7,9 +7,10 @@
             "stat": "str",
             "art": {
                 "name": "Fire Bolt",
-                "damage": 60,
+                "damage": 40,
                 "cost": 20,
-                "element": "FIRE"
+                "element": "FIRE",
+                "art_type": "offensive"
             }
         },
         {
@@ -19,9 +20,10 @@
             "stat": "str",
             "art": {
                 "name": "Heatwave",
-                "damage": 120,
+                "damage": 80,
                 "cost": 50,
-                "element": "FIRE"
+                "element": "FIRE",
+                "art_type": "offensive"
             }
         },
         {
@@ -31,9 +33,10 @@
             "stat": "str",
             "art": {
                 "name": "Volcanic Rain",
-                "damage": 250,
+                "damage": 150,
                 "cost": 180,
-                "element": "FIRE"
+                "element": "FIRE",
+                "art_type": "offensive"
             }
         },
         {
@@ -43,9 +46,10 @@
             "stat": "dfs",
             "art": {
                 "name": "Needle Shot",
-                "damage": 50,
+                "damage": 40,
                 "cost": 20,
-                "element": "EARTH"
+                "element": "EARTH",
+                "art_type": "offensive"
             }
         },
         {
@@ -55,9 +59,10 @@
             "stat": "dfs",
             "art": {
                 "name": "Earth Lance",
-                "damage": 100,
+                "damage": 80,
                 "cost": 50,
-                "element": "EARTH"
+                "element": "EARTH",
+                "art_type": "offensive"
             }
         },
         {
@@ -67,9 +72,52 @@
             "stat": "dfs",
             "art": {
                 "name": "Grand Press",
-                "damage": 150,
+                "damage": 120,
                 "cost": 100,
-                "element": "EARTH"
+                "element": "EARTH",
+                "art_type": "offensive"
+            }
+        },
+        {
+            "id": "heal_1",
+            "name": "Heal 1",
+            "status_change": 0,
+            "stat": null,
+            "art": {
+                "name": "Tear",
+                "damage": 0,
+                "cost": 20,
+                "element": "WATER",
+                "art_type": "support",
+                "effect": "heal_hp:250"
+            }
+        },
+        {
+            "id": "heal_2",
+            "name": "Heal 2",
+            "status_change": 0,
+            "stat": null,
+            "art": {
+                "name": "Teara",
+                "damage": 0,
+                "cost": 60,
+                "element": "WATER",
+                "art_type": "support",
+                "effect": "heal_hp:1000"
+            }
+        },
+        {
+            "id": "heal_3",
+            "name": "Heal 3",
+            "status_change": 0,
+            "stat": null,
+            "art": {
+                "name": "Tearal",
+                "damage": 0,
+                "cost": 100,
+                "element": "WATER",
+                "art_type": "support",
+                "effect": "heal_hp:full"
             }
         }
     ]

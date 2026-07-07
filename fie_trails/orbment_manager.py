@@ -21,7 +21,16 @@ def build_orbment(orbment_data: dict) -> Orbment:
     art = None
     if orbment_data.get("art"):
         a = orbment_data["art"]
-        art = Art(a["name"], a["damage"], a["cost"], Element[a["element"]])
+        from fie_trails.art import ArtType
+        art_type = ArtType(a.get("art_type", "offensive"))
+        art = Art(
+            a["name"],
+            a["damage"],
+            a["cost"],
+            Element[a["element"]],
+            art_type,
+            a.get("effect"),
+        )
 
     element = Element[orbment_data["art"]["element"]] if orbment_data.get("art") else None
 

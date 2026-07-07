@@ -171,50 +171,156 @@ async def fight(
 
             return damage, "craft"
 
+    async def apply_support_art(art, character: Character) -> str:
+        """Apply a support art effect and return a result message."""
+        if art.effect is None:
+            return f"Used {art.name}, but nothing happened."
+
+        effect, _, value = art.effect.partition(":")
+
+        if effect == "heal_hp":
+            if value == "full":
+                amount = character.max_hp - character.current_hp
+            else:
+                amount = int(value)
+            old_hp = character.current_hp
+            character.current_hp = min(character.max_hp, character.current_hp + amount)
+            healed = character.current_hp - old_hp
+            return (
+                f"Used {art.name}! Restored {healed} HP. "
+                f"(HP: {character.current_hp}/{character.max_hp})"
+            )
+
+        return f"Used {art.name}, but nothing happened."
+
     async def choose_art(character: Character):
+        from fie_trails.art import ArtType
+
+        offensive = [a for a in character.equipped_arts if a.art_type == ArtType.OFFENSIVE]
+        support = [a for a in character.equipped_arts if a.art_type == ArtType.SUPPORT]
+
+        while True:
+            lines = []
+            if offensive:
+                lines.append("1 - Attack Arts")
+            if support:
+                lines.append("2 - Support Arts")
+            lines.append("0 - Go back")
+
+            if not offensive and not support:
+                await src_channel.send("You have no arts equipped!")
+                return None, "back"
+
+            await src_channel.send("\n".join(lines))
+
+            sub_choice = await wait_for_digit_reply(
+                client_obj, message_obj.author, message_obj.channel
+            )
+            if sub_choice is None:
+                await src_channel.send(
+                    f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
+                )
+                return None, "back"
+
+            sub = int(sub_choice.content)
+
+            if sub == 0:
+                return None, "back"
+            elif sub == 1 and offensive:
+                result = await choose_offensive_art(character, offensive)
+                if result[1] == "back":
+                    continue
+                return result
+            elif sub == 2 and support:
+                result = await choose_support_art(character, support)
+                if result[1] == "back":
+                    continue
+                return result
+            else:
+                await src_channel.send("That's not a valid choice!")
+                continue
+
+    async def choose_offensive_art(character: Character, arts: list):
         while True:
             art_list = []
-            for i, art in enumerate(character.equipped_arts):
+            for i, art in enumerate(arts):
                 entry = f"{i + 1} - {art}"
                 if art.cost > character.current_ep:
                     entry = f"_{entry} (needs {art.cost} EP)_"
                 art_list.append(entry)
-
             art_list.append("0 - Go back")
             await src_channel.send("\n".join(art_list))
 
             art_choice = await wait_for_digit_reply(
                 client_obj, message_obj.author, message_obj.channel
             )
-
             if art_choice is None:
                 await src_channel.send(
                     f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
                 )
-                return None, "art"
-
-            art_chosen = int(art_choice.content)
-
-            if art_chosen == 0:
                 return None, "back"
 
-            if art_chosen > len(character.equipped_arts):
+            chosen = int(art_choice.content)
+            if chosen == 0:
+                return None, "back"
+            if chosen > len(arts):
                 await src_channel.send(
-                    f"That's not a valid choice! Pick a number between 1 and {len(character.equipped_arts)}."
+                    f"That's not a valid choice! Pick a number between 1 and {len(arts)}."
                 )
                 continue
 
-            selected_art = character.equipped_arts[art_chosen - 1]
-
-            if selected_art.cost > character.current_ep:
+            selected = arts[chosen - 1]
+            if selected.cost > character.current_ep:
                 await src_channel.send(
                     f"Not enough EP! You have {character.current_ep}/{character.ep}. "
                     f"Pick another art."
                 )
                 continue
 
-            character.current_ep -= selected_art.cost
-            return selected_art.damage + character.ats, "art"
+            character.current_ep -= selected.cost
+            return selected.damage + character.ats, "art"
+
+    async def choose_support_art(character: Character, arts: list):
+        while True:
+            art_list = []
+            for i, art in enumerate(arts):
+                entry = f"{i + 1} - {art}"
+                if art.cost > character.current_ep:
+                    entry = f"_{entry} (needs {art.cost} EP)_"
+                art_list.append(entry)
+            art_list.append("0 - Go back")
+            await src_channel.send("\n".join(art_list))
+
+            art_choice = await wait_for_digit_reply(
+                client_obj, message_obj.author, message_obj.channel
+            )
+            if art_choice is None:
+                await src_channel.send(
+                    f"You took too long to decide! I'm going to sleep {emote('SLEEP')}"
+                )
+                return None, "back"
+
+            chosen = int(art_choice.content)
+            if chosen == 0:
+                return None, "back"
+            if chosen > len(arts):
+                await src_channel.send(
+                    f"That's not a valid choice! Pick a number between 1 and {len(arts)}."
+                )
+                continue
+
+            selected = arts[chosen - 1]
+            if selected.cost > character.current_ep:
+                await src_channel.send(
+                    f"Not enough EP! You have {character.current_ep}/{character.ep}. "
+                    f"Pick another art."
+                )
+                continue
+
+            character.current_ep -= selected.cost
+            msg = await apply_support_art(selected, character)
+            await src_channel.send(msg)
+            return 0, "buff"  # support arts consume a turn but deal no damage
 
     async def character_turn(character: Character):
         nonlocal inventory

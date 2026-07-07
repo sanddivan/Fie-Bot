@@ -41,14 +41,14 @@
                 { "name": "Decimate", "damage_multiplier": 3, "cost": 40 }
             ],
             "orbment_drops": [
-                { "id": "attack_2", "chance": 1.0 }
+                { "id": "defense_1", "chance": 1.0 }
             ]
         },
         {
             "id": "grunoja",
             "name": "Grunoja",
             "unlocked_by_default": false,
-            "unlocks_next": "unknown",
+            "unlocks_next": "prov_army_soldier",
             "max_hp": 800,
             "max_cp": 200,
             "str": 60,
@@ -63,7 +63,71 @@
                 { "name": "Fists of Fury", "damage_multiplier": 3, "cost": 40 }
             ],
             "orbment_drops": [
-                { "id": "defense_1", "chance": 1.00 }
+                { "id": "heal_1", "chance": 1.0 }
+            ]
+        },
+        {
+            "id": "prov_army_soldier",
+            "name": "Provincial Army Soldier",
+            "unlocked_by_default": false,
+            "unlocks_next": "kazakh_doven",
+            "max_hp": 800,
+            "max_cp": 200,
+            "str": 65,
+            "def": 40,
+            "ats": 40,
+            "adf": 40,
+            "spd": 30,
+            "xp_reward": 2500,
+            "mira_reward": 2500,
+            "crafts": [
+                { "name": "Massive Shot", "damage_multiplier": 3, "cost": 20 }
+            ],
+            "orbment_drops": [
+                { "id": "defense_2", "chance": 1.0 }
+            ]
+        },
+        {
+            "id": "kazakh_doven",
+            "name": "Kazakh Doven",
+            "unlocked_by_default": false,
+            "unlocks_next": "millium",
+            "max_hp": 1200,
+            "max_cp": 200,
+            "str": 70,
+            "def": 50,
+            "ats": 50,
+            "adf": 35,
+            "spd": 35,
+            "xp_reward": 3000,
+            "mira_reward": 3000,
+            "crafts": [
+                { "name": "Armor Crusher", "damage_multiplier": 2, "cost": 20 },
+                { "name": "Double Cracker", "damage_multiplier": 4, "cost": 40 }
+            ],
+            "orbment_drops": [
+                { "id": "attack_2", "chance": 1.0 }
+            ]
+        },
+        {
+            "id": "millium",
+            "name": "Millium",
+            "unlocked_by_default": false,
+            "unlocks_next": null,
+            "max_hp": 1200,
+            "max_cp": 200,
+            "str": 80,
+            "def": 45,
+            "ats": 50,
+            "adf": 35,
+            "spd": 35,
+            "xp_reward": 3500,
+            "mira_reward": 3500,
+            "crafts": [
+                { "name": "Buster Arm", "damage_multiplier": 2, "cost": 20 }
+            ],
+            "orbment_drops": [
+                { "id": "heal_2", "chance": 1.0 }
             ]
         }
     ]

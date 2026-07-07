@@ -1,19 +1,28 @@
-# "enum" is not what you want to annotate. "enum" is the module. What you want
-# is the type "Enum".
-# Change this import to "from enum import Enum"
 from enum import Enum
-
 from fie_trails.element import Element
 
 
+class ArtType(Enum):
+    OFFENSIVE = "offensive"
+    SUPPORT = "support"
+
+
 class Art:
-    # And then change "element: enum" to "element: Enum".
-    def __init__(self, name: str, damage: int, cost: int, element: Element):
+    def __init__(
+        self,
+        name: str,
+        damage: int,
+        cost: int,
+        element: Element,
+        art_type: ArtType = ArtType.OFFENSIVE,
+        effect: str | None = None,
+    ):
         self.name = name
         self.damage = damage
         self.cost = cost
         self.element = element
-
+        self.art_type = art_type
+        self.effect = effect  # e.g. "heal_hp:250"
 
     def __str__(self):
-        return self.name + " - " + str(self.cost) + " EP"
+        return f"{self.name} - {self.cost} EP"
