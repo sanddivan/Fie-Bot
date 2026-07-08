@@ -15,8 +15,8 @@
             "xp_reward": 500,
             "mira_reward": 200,
             "crafts": [
-                { "name": "Claw Attack", "damage_multiplier": 2, "cost": 20 },
-                { "name": "Tail Swing", "damage_multiplier": 3, "cost": 40 }
+                { "name": "Claw Attack", "type": "attack", "damage_multiplier": 2, "cost": 20 },
+                { "name": "Tail Swing", "type": "attack", "damage_multiplier": 3, "cost": 40 }
             ],
             "orbment_drops": [
                 { "id": "attack_1", "chance": 1.0 }
@@ -37,8 +37,8 @@
             "xp_reward": 1000,
             "mira_reward": 1000,
             "crafts": [
-                { "name": "Bite", "damage_multiplier": 2, "cost": 20 },
-                { "name": "Decimate", "damage_multiplier": 3, "cost": 40 }
+                { "name": "Bite", "type": "attack", "damage_multiplier": 2, "cost": 20 },
+                { "name": "Decimate", "type": "attack", "damage_multiplier": 3, "cost": 40 }
             ],
             "orbment_drops": [
                 { "id": "defense_1", "chance": 1.0 }
@@ -59,8 +59,8 @@
             "xp_reward": 2000,
             "mira_reward": 2000,
             "crafts": [
-                { "name": "Deadly Cry", "damage_multiplier": 2, "cost": 20 },
-                { "name": "Fists of Fury", "damage_multiplier": 3, "cost": 40 }
+                { "name": "Deadly Cry", "type": "attack", "damage_multiplier": 2, "cost": 20 },
+                { "name": "Fists of Fury", "type": "attack", "damage_multiplier": 3, "cost": 40 }
             ],
             "orbment_drops": [
                 { "id": "heal_1", "chance": 1.0 }
@@ -81,7 +81,7 @@
             "xp_reward": 2500,
             "mira_reward": 2500,
             "crafts": [
-                { "name": "Massive Shot", "damage_multiplier": 3, "cost": 20 }
+                { "name": "Massive Shot", "type": "attack", "damage_multiplier": 3, "cost": 20 }
             ],
             "orbment_drops": [
                 { "id": "defense_2", "chance": 1.0 }
@@ -102,8 +102,9 @@
             "xp_reward": 3000,
             "mira_reward": 3000,
             "crafts": [
-                { "name": "Armor Crusher", "damage_multiplier": 2, "cost": 20 },
-                { "name": "Double Cracker", "damage_multiplier": 4, "cost": 40 }
+                { "name": "Armor Crusher", "type": "attack", "damage_multiplier": 2, "cost": 20 },
+                { "name": "Double Cracker", "type": "attack", "damage_multiplier": 4, "cost": 40 },
+                { "name": "Power Up", "type": "buff", "stat": "str", "multiplier": 1.25, "turns": 3, "cost": 0 }
             ],
             "orbment_drops": [
                 { "id": "attack_2", "chance": 1.0 }
@@ -124,7 +125,8 @@
             "xp_reward": 3500,
             "mira_reward": 3500,
             "crafts": [
-                { "name": "Buster Arm", "damage_multiplier": 2, "cost": 20 }
+                { "name": "Buster Arm", "type": "attack", "damage_multiplier": 2, "cost": 20 },
+                { "name": "Ultimate Barrier", "type": "shield", "cost": 30 }
             ],
             "orbment_drops": [
                 { "id": "heal_2", "chance": 1.0 }

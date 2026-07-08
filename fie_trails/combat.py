@@ -48,6 +48,8 @@ async def fight(
     # Start each fight with full CP and no active buffs
     character.cp = MAX_CP
     active_buffs: list[ActiveBuff] = []
+    enemy_buffs: dict[str, dict] = {}   # stat -> {multiplier, turns_left}
+    enemy_shield: dict[str, bool] = {"active": False}
 
     def gain_cp(amount: int):
         character.cp = min(MAX_CP, character.cp + amount)
@@ -377,19 +379,57 @@ async def fight(
     async def enemy_turn(enemy: Enemy):
         choice = random.randint(0, len(enemy.crafts))
 
-        if choice != 0:
-            await src_channel.send(
-                f"{enemy.get_name()} used {enemy.get_specific_craft(choice - 1)}\n"
-            )
-        else:
-            await src_channel.send(f"{enemy.get_name()} used a normal attack!\n")
-        await asyncio.sleep(1)
-
         if choice == 0:
-            return enemy.STR
-        else:
-            enemy.set_cp(enemy.get_cp() - enemy.crafts[choice - 1].cost)
-            return enemy.crafts[choice - 1].damage
+            await src_channel.send(f"{enemy.get_name()} used a normal attack!\n")
+            await asyncio.sleep(1)
+            return enemy.STR, "attack"
+
+        craft = enemy.crafts[choice - 1]
+        enemy.set_cp(enemy.get_cp() - craft.cost)
+
+        if craft.craft_type == "buff":
+            # Apply buff to enemy's stat for the duration
+            enemy_buffs[craft.stat] = {
+                "multiplier": craft.multiplier,
+                "turns_left": craft.turns,
+            }
+            await src_channel.send(
+                f"{enemy.get_name()} used {craft.name}! "
+                f"{craft.stat.upper()} increased for {craft.turns} turns!\n"
+            )
+            await asyncio.sleep(1)
+            return 0, "buff"
+
+        elif craft.craft_type == "shield":
+            enemy_shield["active"] = True
+            await src_channel.send(
+                f"{enemy.get_name()} used {craft.name}! "
+                f"Your next attack will be blocked!\n"
+            )
+            await asyncio.sleep(1)
+            return 0, "buff"
+
+        else:  # attack
+            await src_channel.send(
+                f"{enemy.get_name()} used {craft.name}!\n"
+            )
+            await asyncio.sleep(1)
+            return craft.damage, "attack"
+
+    def tick_enemy_buffs():
+        """Decrement enemy buff durations, removing expired ones."""
+        expired = [stat for stat, b in enemy_buffs.items() if b["turns_left"] <= 1]
+        for stat in expired:
+            del enemy_buffs[stat]
+        for buff in enemy_buffs.values():
+            buff["turns_left"] -= 1
+
+    def get_enemy_buffed_stat(stat: str) -> int:
+        """Return an enemy stat with active buff multiplier applied."""
+        base = getattr(enemy, stat.upper(), getattr(enemy, stat, 0))
+        if stat in enemy_buffs:
+            base = int(base * enemy_buffs[stat]["multiplier"])
+        return base
 
     def reset_everyone(enemy: Enemy, character: Character):
         character.reset()
@@ -418,7 +458,16 @@ async def fight(
         """Apply damage and CP gain for a character action."""
         if damage_type == "buff":
             return
-        elif damage_type == "art":
+
+        # Check if enemy shield is active
+        if enemy_shield["active"]:
+            enemy_shield["active"] = False
+            await src_channel.send(
+                f"{enemy.get_name()} blocked the attack!\n"
+            )
+            return
+
+        if damage_type == "art":
             difference = dif(damage_dealt - enemy.get_adf())
         else:  # "physical" or "craft"
             difference = dif(damage_dealt - enemy.get_def())
@@ -440,27 +489,41 @@ async def fight(
                 if await check_victory(enemy, character):
                     return
 
-                damage_received = await enemy_turn(enemy)
-                difference = dif(damage_received - character.dfs)
-                character.current_hp -= difference
-                gain_cp(CP_ON_HIT_RECEIVED)
-                await src_channel.send(
-                    f"Character HP: {character.current_hp} (-{difference})\n"
-                )
-                await asyncio.sleep(1)
+                damage_dealt_enemy, enemy_action_type = await enemy_turn(enemy)
+                tick_enemy_buffs()
+                if enemy_action_type == "attack":
+                    # Normal attack returns enemy.STR; craft returns flat damage.
+                    # Apply STR buff only for normal attacks.
+                    if damage_dealt_enemy == enemy.STR:
+                        damage_received = get_enemy_buffed_stat("STR")
+                    else:
+                        damage_received = damage_dealt_enemy
+                    difference = dif(damage_received - character.dfs)
+                    character.current_hp -= difference
+                    gain_cp(CP_ON_HIT_RECEIVED)
+                    await src_channel.send(
+                        f"Character HP: {character.current_hp} (-{difference})\n"
+                    )
+                    await asyncio.sleep(1)
 
                 if await check_defeat(character, enemy):
                     return
 
             else:
-                damage_received = await enemy_turn(enemy)
-                difference = dif(damage_received - character.dfs)
-                character.current_hp -= difference
-                gain_cp(CP_ON_HIT_RECEIVED)
-                await src_channel.send(
-                    f"Character HP: {character.current_hp} (-{difference})\n"
-                )
-                await asyncio.sleep(1)
+                damage_dealt_enemy, enemy_action_type = await enemy_turn(enemy)
+                tick_enemy_buffs()
+                if enemy_action_type == "attack":
+                    if damage_dealt_enemy == enemy.STR:
+                        damage_received = get_enemy_buffed_stat("STR")
+                    else:
+                        damage_received = damage_dealt_enemy
+                    difference = dif(damage_received - character.dfs)
+                    character.current_hp -= difference
+                    gain_cp(CP_ON_HIT_RECEIVED)
+                    await src_channel.send(
+                        f"Character HP: {character.current_hp} (-{difference})\n"
+                    )
+                    await asyncio.sleep(1)
 
                 if await check_defeat(character, enemy):
                     return

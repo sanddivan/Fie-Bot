@@ -15,14 +15,32 @@ def _load_all() -> list[dict]:
 
 def build_enemy(boss_data: dict) -> Enemy:
     """Construct an Enemy instance from a boss dict."""
-    crafts = [
-        EnemyCraft(
-            c["name"],
-            boss_data["str"] * c["damage_multiplier"],
-            c["cost"],
-        )
-        for c in boss_data.get("crafts", [])
-    ]
+    crafts = []
+    for c in boss_data.get("crafts", []):
+        craft_type = c.get("type", "attack")
+        if craft_type == "attack":
+            crafts.append(EnemyCraft(
+                name=c["name"],
+                craft_type="attack",
+                cost=c["cost"],
+                damage=boss_data["str"] * c["damage_multiplier"],
+            ))
+        elif craft_type == "buff":
+            crafts.append(EnemyCraft(
+                name=c["name"],
+                craft_type="buff",
+                cost=c["cost"],
+                stat=c["stat"],
+                multiplier=c["multiplier"],
+                turns=c["turns"],
+            ))
+        elif craft_type == "shield":
+            crafts.append(EnemyCraft(
+                name=c["name"],
+                craft_type="shield",
+                cost=c["cost"],
+            ))
+
     return Enemy(
         boss_data["name"],
         boss_data["max_hp"],        # max_HP
